@@ -10,7 +10,8 @@ const express= require('express'),
     cookieParser = require('cookie-parser'),
     bodyParser = require('body-parser'),
     path = require('path'),
-    app = express();
+    app = express(),
+    port = process.env.PORT || 1337;
 
 /**
  * Uncomment this line for lunch scraping module
@@ -59,7 +60,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname + '/index.html'))
 });
 
-app.listen(5555, function() {
+app.listen(port, function() {
     console.log('App listening on Heroku app')
 });
 
