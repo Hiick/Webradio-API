@@ -54,7 +54,7 @@ FIREBASE_APP_ID=
 ## Run API
 ```
 cd server
-nodemon index.js
+nodemon app.js
 ```
 
 ## Contributing
