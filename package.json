@@ -6,8 +6,9 @@
   },
   "description": "",
   "main": "app.js",
+  "web": "node app.js",
   "scripts": {
-    "start": "node app.js HOST=0.0.0.0"
+    "start": "node app.js"
   },
   "keywords": [],
   "author": "",

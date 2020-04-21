@@ -3,3 +3,5 @@ todo.txt
 node_modules
 .env
 .idea
+
+.now
