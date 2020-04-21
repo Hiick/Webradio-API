@@ -59,7 +59,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname + '/index.html'))
 });
 
-app.listen(5555, () => {
+app.listen(5555, "0.0.0.0", function() {
     console.log('App listening on Heroku app')
 });
 
