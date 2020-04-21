@@ -3,9 +3,9 @@ const mysql = require('mysql'),
     { formatDate } = require('../utils/utils');
 
 const pool = mysql.createPool({
-    host: process.env.MYSQL_HOST,
+    host: process.env.HOST,
     port: process.env.PORT,
-    user: process.env.USERNAME,
+    user: process.env.USER,
     password: process.env.PASSWORD,
     database: process.env.DATABASE
 });

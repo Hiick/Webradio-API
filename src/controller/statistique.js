@@ -8,9 +8,9 @@ const mysql = require('mysql'),
 let idUser;
 
 const pool = mysql.createPool({
-    host: process.env.MYSQL_HOST,
+    host: process.env.HOST,
     port: process.env.PORT,
-    user: process.env.USERNAME,
+    user: process.env.USER,
     password: process.env.PASSWORD,
     database: process.env.DATABASE
 });
