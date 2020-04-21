@@ -6,7 +6,7 @@ let connection = null;
 function initConnection() {
     connection = mySql.createConnection({
         host: process.env.HOST,
-        port: process.env.PORT,
+        port: process.env.MYSQL_PORT,
         user: process.env.USER,
         password: process.env.PASSWORD,
         database: process.env.DATABASE
