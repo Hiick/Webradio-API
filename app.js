@@ -11,7 +11,7 @@ const express= require('express'),
     bodyParser = require('body-parser'),
     path = require('path'),
     app = express(),
-    port = process.env.PORT || 1337;
+    port = process.env.PORT || 3000;
 
 /**
  * Uncomment this line for lunch scraping module

@@ -252,7 +252,21 @@ const getAllInactiveUsers = () => {
 const deleteUserById = async (id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        DELETE FROM users 
+        SELECT FROM users
+        WHERE user_id = ${id}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) reject(err);
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun utilisateur trouvé')
+            }
+            console.log('ROWS ' + rows)
+            //resolve(rows);
+        });
+    });
+    /*return new Promise((resolve, reject) => {
+        const query = `
+        DELETE FROM users
         WHERE user_id = ${id}`;
 
         pool.query(query, async (err, rows) => {
@@ -262,7 +276,7 @@ const deleteUserById = async (id) => {
             }
             resolve(rows);
         });
-    });
+    });*/
 };
 
 module.exports = {
