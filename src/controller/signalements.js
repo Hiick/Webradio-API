@@ -26,9 +26,9 @@ const registerSignalement = (data) => {
             } else {
                 const query = `
                 INSERT INTO signalements
-                (channel_id,user_id,channel_name,url_stream,motif,date_stream)
+                (user_id,channel_name,url_stream,motif,channel_id,date_stream)
                 VALUES
-                ('${data.channel_id}','${data.user_id}','${data.channel}','${data.url_stream}','${data.motif}','${formatDate(data.date_stream)}')`;
+                ('${data.user_id}','${data.channel}','${data.url_stream}','${data.motif}','${data.channel_id}','${formatDate(data.date_stream)}')`;
 
                 pool.query(query, async (err, rows) => {
                     if(err) throw err;
