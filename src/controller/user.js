@@ -9,6 +9,14 @@ const mysql = require('mysql'),
 
 let idUser;
 
+const pool = mysql.createPool({
+    host: process.env.HOST,
+    port: process.env.MYSQL_PORT,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE
+});
+
 module.exports = generateOAuth2Token = (id) => {
     return new Promise(async (resolve) => {
         const token = await new Promise(async (resolveToken) => {
