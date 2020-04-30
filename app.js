@@ -9,6 +9,7 @@ const express= require('express'),
     passport = require('passport'),
     cookieParser = require('cookie-parser'),
     bodyParser = require('body-parser'),
+    { check } = require('express-validator'),
     path = require('path'),
     app = express(),
     port = process.env.PORT || 3000;
@@ -33,9 +34,9 @@ app.all('/*', function(req, res, next) {
 });
 
 const restrictedAreaRoutesMethods = require('./src/routes/restricted/restrictedAreaRoutesMethods'),
-    restrictedAreaRoutes = require('./src/routes/restricted/restrictedAreaRoutes')(express.Router(), app, restrictedAreaRoutesMethods),
+    restrictedAreaRoutes = require('./src/routes/restricted/restrictedAreaRoutes')(express.Router(), check, app, restrictedAreaRoutesMethods),
     authRoutesMethods = require('./src/routes/open/authRoutesMethodes')(user),
-    authRoutes = require('./src/routes/open/authRoutes')(express.Router(), app, authRoutesMethods);
+    authRoutes = require('./src/routes/open/authRoutes')(express.Router(), check, authRoutesMethods);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

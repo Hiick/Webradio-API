@@ -30,11 +30,29 @@ const getAllBanishChannels = async () => {
     return await Channel.find({ status: "BANISH" })
 };
 
+const setInactiveChannelByID = async (channel_id) => {
+    return await Channel.updateOne({ _id: channel_id }, {
+        $set: {
+            status: 'INACTIVE'
+        }
+    })
+};
+
+const setActiveChannelByID = async (channel_id) => {
+    return await Channel.updateOne({ _id: channel_id }, {
+        $set: {
+            status: 'ACTIVE'
+        }
+    })
+};
+
 module.exports = {
     getAllChannels,
     getChannel,
     updateChannelByID,
     getAllStreamChannels,
     deleteChannelByID,
-    getAllBanishChannels
+    getAllBanishChannels,
+    setInactiveChannelByID,
+    setActiveChannelByID
 };

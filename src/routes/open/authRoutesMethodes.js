@@ -1,6 +1,8 @@
 const mongoose = require('mongoose'),
+    { validationResult } = require('express-validator'),
     Channel = require('../../models/channel');
-const { facebookUserLogin, addChannelIdToNewUser } = require('../../controller/user');
+const { facebookUserLogin, addChannelIdToNewUser, generateOAuth2Token, getUserByEmail, userBack } = require('../../controller/user');
+const { setActiveChannelByID } = require('../../controller/channel');
 
 let user;
 
@@ -14,74 +16,146 @@ module.exports = injectedUser => {
     }
 };
 
-function register(req, res) {
-    let datas = {
-        email: req.body.email,
-        username: req.body.username,
-        password: req.body.password
-    };
+const register = async (req, res) => {
+    const errors = validationResult(req);
 
-    user.checkUserExist(req.body.email, (sqlError, doesUserExist) => {
-        if (sqlError !== null || doesUserExist){
-            const message = sqlError !== null ? "Operation unsuccessful" : "User already exists";
+    if (!errors.isEmpty()) {
+        sendResponse(res, {
+            message: 'Erreur de validation',
+        }, errors.array())
+    } else {
+        let data = {
+            email: req.body.email,
+            username: req.body.username,
+            password: req.body.password
+        };
 
-            sendResponse(res, message, sqlError);
+        try {
+            const userExist = await getUserByEmail(JSON.stringify(data.email));
+            if (userExist[0].status === 'INACTIVE') {
+                await userBack(userExist, data);
+                await setActiveChannelByID(userExist[0].channel_id);
 
-            return
-        }
+                generateOAuth2Token(userExist[0].user_id).then( token => {
+                    sendResponse(res, {
+                        message: 'Inscription de l\'utilisateur et de sa chaîne effectué avec succès',
+                        token: token
+                    }, null)
+                });
+            } else {
+                sendResponse(res, {
+                    message: 'Il semblerait que vous avez déjà un compte chez nous ! Si vous ne vous souvenez plus de votre mot de passe, vous pouvez le restaurer en cliquant sur - Mot de passe oublié - !',
+                }, 'Impossible de vous inscrire')
+            }
+        } catch (err) {
+            user.checkUserExist(req.body.email, async (sqlError, doesUserExist) => {
+                if (sqlError !== null || doesUserExist){
+                    const message = sqlError !== null ? "Operation unsuccessful" : "User already exists";
 
-        user.register(datas, dataResponseObject => {
-            const message =  dataResponseObject.error === null  ? "New user add with channel" : "Failed to add user";
+                    sendResponse(res, message, sqlError);
 
-            let channel = {
-                user_id: dataResponseObject.results.insertId,
-                channel_name: "",
-                avatar: "https://firebasestorage.googleapis.com/v0/b/webradio-stream.appspot.com/o/base_url.png?alt=media&token=a996c02e-ae13-40aa-b224-c2f4d703c606",
-                Flux: [{
-                    stream_url: "",
-                    first_source: {
-                        source_url: "",
-                        name: "",
-                        volume_source: ""
-                    },
-                    second_source: {
-                        source_url: "",
-                        name: "",
-                        volume_source: ""
-                    }
-                }],
-                Stream: [{
-                    _id: new mongoose.Types.ObjectId,
-                    volume_1: "",
-                    volume_2: "",
-                    direct_url: "",
-                    createdAt: new Date(),
-                }],
-                radio: false,
-                status: "ACTIVE",
-                live: false,
-                createdAt: new Date()
-            };
-
-            const newChannel = Channel(channel);
-            newChannel.save(async (e, result) => {
-                await addChannelIdToUser(dataResponseObject.results.insertId, result._id);
-
-                if (e) {
-                    res.status(401).send(e)
+                    return
                 }
+
+                user.register(data, dataResponseObject => {
+                    let channel = {
+                        user_id: dataResponseObject.results.insertId,
+                        channel_name: req.body.username,
+                        avatar: "https://firebasestorage.googleapis.com/v0/b/webradio-stream.appspot.com/o/base_url.png?alt=media&token=a996c02e-ae13-40aa-b224-c2f4d703c606",
+                        Flux: [{
+                            stream_url: "",
+                            first_source: {
+                                source_url: "",
+                                name: "",
+                                volume_source: ""
+                            },
+                            second_source: {
+                                source_url: "",
+                                name: "",
+                                volume_source: ""
+                            }
+                        }],
+                        Stream: [{
+                            _id: new mongoose.Types.ObjectId,
+                            volume_1: "",
+                            volume_2: "",
+                            direct_url: "",
+                            createdAt: new Date(),
+                        }],
+                        radio: false,
+                        status: "ACTIVE",
+                        live: false,
+                        createdAt: new Date()
+                    };
+
+                    const newChannel = Channel(channel);
+                    newChannel.save(async (e, result) => {
+                        try {
+                            await addChannelIdToUser(dataResponseObject.results.insertId, result._id);
+                        } catch (e) {
+                            console.log(e);
+                        }
+
+                        if (e) {
+                            res.status(401).send(e)
+                        }
+                    });
+
+                    const message =  dataResponseObject.error === null  ? "Inscription utilisateur et sa chaîne effectué avec succès !" : "Erreur pour l'inscription de l'utilisateur";
+                    generateOAuth2Token(dataResponseObject.results.insertId).then( token => {
+                        sendResponse(res, {
+                            message: message,
+                            token: token
+                        }, dataResponseObject.error)
+                    });
+                });
             });
+        }
+    }
+};
 
+const login = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        sendResponse(res, {
+            message: 'Erreur de validation',
+        }, errors.array())
+    } else {
+        let data = {
+            email: req.body.email,
+            password: req.body.password
+        };
+
+        try {
+            const userExist = await getUserByEmail(JSON.stringify(data.email));
+
+            if (userExist) {
+                if (userExist[0].status === "INACTIVE") {
+                    sendResponse(res, {
+                        error: true,
+                        message: 'Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !'
+                    })
+                } else {
+                    user.login(data, userExist, dataResponseObject => {
+                        const message =  dataResponseObject.error === null  ? "Connected !" : "Failed to connect";
+                        generateOAuth2Token(userExist[0].user_id).then( token => {
+                            sendResponse(res, {
+                                message: message,
+                                token: (dataResponseObject.error !== null) ? null : token
+                            }, dataResponseObject.error)
+                        });
+                    });
+                }
+            }
+        } catch (err) {
             sendResponse(res, {
-                message: message,
-                channel: channel
-            }, dataResponseObject.error)
-        })
-    })
-}
-
-function login(){
-}
+                error: true,
+                message: err
+            })
+        }
+    }
+};
 
 function sendResponse(res, message, error) {
     res

@@ -13,7 +13,8 @@ const {
     updateChannelByID,
     getAllStreamChannels,
     deleteChannelByID,
-    getAllBanishChannels
+    getAllBanishChannels,
+    setInactiveChannelByID
 } = require('../../controller/channel');
 
 const {
@@ -24,7 +25,8 @@ const {
     getAllActiveUsers,
     getAllInactiveUsers,
     deleteUserById,
-    getUserWithOAuthToken
+    getUserWithOAuthToken,
+    setInactiveUserById
 } = require('../../controller/user');
 
 const {
@@ -64,48 +66,62 @@ const {
 } = require('../../controller/statistique');
 
 const Channel = require('../../models/channel'),
+    { validationResult } = require('express-validator'),
     TailingReadableStream = require('tailing-stream');
 
 /**
  * SIGNALEMENTS METHODES
  */
 const newSignalement = async (req, res) => {
-    let channel_id = req.params.id;
+    const errors = validationResult(req);
 
-    Channel.findById(channel_id, async (err, channel) => {
-        let signalement = {
-            channel_id: channel_id,
-            user_id: channel.user_id,
-            channel: channel.channel_name,
-            url_stream: channel.Stream[0].direct_url,
-            date_stream: channel.Stream[0].createdAt,
-            motif: req.body.motif
-        };
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        let channel_id = req.params.id;
 
-        try {
-            await registerSignalement(signalement);
+        Channel.findById(channel_id, async (err, channel) => {
+            let signalement = {
+                channel_id: channel_id,
+                user_id: channel.user_id,
+                channel: channel.channel_name,
+                url_stream: channel.Stream[0].direct_url,
+                date_stream: channel.Stream[0].createdAt,
+                motif: req.body.motif
+            };
 
-            res.status(200).send({
-                message: 'Le signalement à bien été envoyé',
-                signalement: signalement,
-            });
-        } catch (err) {
-            res.status(400).send({
-                message: err
-            });
-        }
-    })
+            try {
+                await registerSignalement(signalement);
 
+                res.status(200).send({
+                    success: true,
+                    message: 'Le signalement à bien été envoyé',
+                    signalement: signalement,
+                });
+            } catch (err) {
+                res.status(400).send({
+                    success: false,
+                    message: err
+                });
+            }
+        })
+    }
 };
 const getSignalements = async (req, res) => {
     try {
         const signalements = await getAllSignalements();
 
         res.status(200).send({
+            success: true,
             signalements,
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -119,10 +135,12 @@ const getSignalementsByChannelID = async (req, res) => {
         const signalements = await getSignalementsByID(signalement);
 
         res.status(200).send({
+            success: true,
             signalements,
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -136,29 +154,45 @@ const deleteSignalement = async (req, res) => {
         const signal = await deleteSignalementByID(signalement);
 
         res.status(200).send({
+            success: true,
             signal,
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
 };
 const updateSignalement = async (req, res) => {
-    let data = {
-        id: req.params.id,
-        motif: req.body.motif
-    };
+    const errors = validationResult(req);
 
-    try {
-        await updateSignalementByID(data);
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        let data = {
+            id: req.params.id,
+            motif: req.body.motif
+        };
 
-        res.status(200).send({
-            message: 'Signalement mis à jour',
-            update: data
-        })
-    } catch (err) {
-        res.status(400).send(err);
+        try {
+            await updateSignalementByID(data);
+
+            res.status(200).send({
+                success: true,
+                message: 'Signalement mis à jour',
+                update: data
+            })
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                err
+            });
+        }
     }
 };
 /**
@@ -186,11 +220,13 @@ const banishChannel = async (req, res) => {
             });
 
             res.status(200).send({
+                success: true,
                 message: 'La chaîne est bannie. Ses signalements ont étés supprimés',
                 banish: channel,
             });
         } catch (err) {
             res.status(400).send({
+                success: false,
                 message: err
             });
         }
@@ -215,11 +251,13 @@ const unbanChannel = async (req, res) => {
             });
 
             res.status(200).send({
+                success: true,
                 message: 'La chaîne n\'est plus bannie.',
                 banish: channel,
             });
         } catch (err) {
             res.status(400).send({
+                success: false,
                 message: err
             });
         }
@@ -230,9 +268,13 @@ const getChannels = async (req, res) => {
     try {
         const channels = await getAllChannels();
 
-        res.status(200).send(channels);
+        res.status(200).send({
+            success: true,
+            channels
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -241,37 +283,60 @@ const getOneChannel = async (req, res) => {
     try {
         const channel = await getChannel(req.params.id);
 
-        res.status(200).send(channel);
+        res.status(200).send({
+            success: true,
+            channel
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
 };
 const updateChannel = async (req, res) => {
-    let data = {
-        channel_name: req.body.name,
-        avatar: req.body.avatar,
-    };
+    const errors = validationResult(req);
 
-    try {
-        await updateChannelByID(req.params.id, data);
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        let data = {
+            channel_name: req.body.name,
+            avatar: req.body.avatar,
+        };
 
-        res.status(200).send({
-            message: 'Chaîne mise à jour',
-            update: data
-        })
-    } catch (err) {
-        res.status(400).send(err);
+        try {
+            await updateChannelByID(req.params.id, data);
+
+            res.status(200).send({
+                success: true,
+                message: 'Chaîne mise à jour',
+                update: data
+            })
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                err
+            });
+        }
     }
+
 };
 const getStreamChannel = async (req, res) => {
     try {
         const channels = await getAllStreamChannels();
 
-        res.status(200).send(channels);
+        res.status(200).send({
+            success: true,
+            channels
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -281,10 +346,12 @@ const deleteChannel = async (req, res) => {
         await deleteChannelByID(req.params.id);
 
         res.status(200).send({
+            success: true,
             message: 'Chaîne supprimée'
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -293,9 +360,15 @@ const getBanishChannels = async (req, res) => {
     try {
         let channels = await getAllBanishChannels();
 
-        res.status(200).send(channels)
+        res.status(200).send({
+            success: true,
+            channels
+        })
     } catch (err) {
-        res.status(400).send(err);
+        res.status(400).send({
+            success: false,
+            err
+        });
     }
 };
 /**
@@ -306,29 +379,47 @@ const getBanishChannels = async (req, res) => {
  * RADIOS METHODES
  */
 const addRadio = async (req, res) => {
-    let radio = {
-        radio_name: req.body.radio_name,
-        logo: req.body.logo,
-        direct_url: req.body.direct_url
-    };
+    const errors = validationResult(req);
 
-    try {
-       let newRadio = await addNewRadio(radio);
-
-        res.status(200).send(newRadio);
-    } catch (err) {
+    if (!errors.isEmpty()) {
         res.status(400).send({
-            message: err
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
         });
+    } else {
+        let radio = {
+            radio_name: req.body.radio_name,
+            logo: req.body.logo,
+            direct_url: req.body.direct_url
+        };
+
+        try {
+            let newRadio = await addNewRadio(radio);
+
+            res.status(200).send({
+                success: true,
+                newRadio
+            });
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                message: err
+            });
+        }
     }
 };
 const getRadios = async (req, res) => {
     try {
         let radios = await getAllRadios();
 
-        res.status(200).send(radios);
+        res.status(200).send({
+            success: true,
+            radios
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -337,33 +428,49 @@ const getOneRadio = async (req, res) => {
     try {
         let radio = await getRadioByID(req.params.id);
 
-        res.status(200).send(radio);
+        res.status(200).send({
+            success: true,
+            radio
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
 };
 const updateOneRadio = async (req, res) => {
-    let newRadio = {
-        radio_name: req.body.radio_name,
-        logo: req.body.logo,
-        direct_url: req.body.direct_url
-    };
+    const errors = validationResult(req);
 
-    try {
-        let radio = await updateRadioByID(newRadio, req.params.id);
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        let newRadio = {
+            radio_name: req.body.radio_name,
+            logo: req.body.logo,
+            direct_url: req.body.direct_url
+        };
 
-        if (radio) {
-            res.status(200).send({
-                message: 'Radio mise à jour avec succès !',
-                data: newRadio
+        try {
+            let radio = await updateRadioByID(newRadio, req.params.id);
+
+            if (radio) {
+                res.status(200).send({
+                    success: true,
+                    message: 'Radio mise à jour avec succès !',
+                    data: newRadio
+                });
+            }
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                message: 'La radio n\'existe pas'
             });
         }
-    } catch (err) {
-        res.status(400).send({
-            message: 'La radio n\'existe pas'
-        });
     }
 };
 const deleteOneRadio = async (req, res) => {
@@ -372,11 +479,13 @@ const deleteOneRadio = async (req, res) => {
 
         if (deleted) {
             res.status(200).send({
+                success: true,
                 message: 'Chaîne supprimée'
             });
         }
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -389,47 +498,77 @@ const deleteOneRadio = async (req, res) => {
  * USERS METHODES
  */
 const updateUser = async (req, res) => {
+    const errors = validationResult(req);
 
-    let updateUser = {
-        user_id: req.params.id,
-        username: req.body.username,
-        avatar: req.body.avatar
-    };
-
-    try {
-        await updateOneUser(updateUser);
-
-        res.status(200).send('Utilisateur mis à jour !');
-    } catch (err) {
+    if (!errors.isEmpty()) {
         res.status(400).send({
-            message: err
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
         });
+    } else {
+        let updateUser = {
+            user_id: req.params.id,
+            username: req.body.username,
+            avatar: req.body.avatar
+        };
+
+        try {
+            await updateOneUser(updateUser);
+
+            res.status(200).send({
+                success: true,
+                message: 'Utilisateur mis à jour !'
+            });
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                message: err
+            });
+        }
     }
 };
 const updateUserPassword = async (req, res) => {
+    const errors = validationResult(req);
 
-    let updateUser = {
-        user_id: req.params.id,
-        password: req.body.password
-    };
-
-    try {
-        await updateOneUserPassword(updateUser);
-
-        res.status(200).send('Mot de passe mis à jour !');
-    } catch (err) {
+    if (!errors.isEmpty()) {
         res.status(400).send({
-            message: err
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
         });
+    } else {
+        let updateUser = {
+            user_id: req.params.id,
+            password: req.body.password
+        };
+
+        try {
+            await updateOneUserPassword(updateUser);
+
+            res.status(200).send({
+                success: true,
+                message: 'Mot de passe mis à jour !'
+            });
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                message: err
+            });
+        }
     }
 };
 const getUsers = async (req, res) => {
     try {
         const users = await getAllUsers();
 
-        res.status(200).send(users);
+        res.status(200).send({
+            success: true,
+            users
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -438,9 +577,13 @@ const getOneUser = async (req, res) => {
     try {
         const user = await getUserById(req.params.id);
 
-        res.status(200).send(user);
+        res.status(200).send({
+            success: true,
+            user
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -456,9 +599,13 @@ const getUserWithOAuth = async (req, res) => {
 
         const user = await getUserWithOAuthToken(receivedToken);
 
-        res.status(200).send(user);
+        res.status(200).send({
+            success: true,
+            user
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -467,9 +614,13 @@ const getActiveUser = async (req, res) => {
     try {
         const users = await getAllActiveUsers();
 
-        res.status(200).send(users);
+        res.status(200).send({
+            success: true,
+            users
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -478,22 +629,45 @@ const getInactiveUser = async (req, res) => {
     try {
         const users = await getAllInactiveUsers();
 
-        res.status(200).send(users);
+        res.status(200).send({
+            success: true,
+            users
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
 };
 const deleteUser = async (req, res) => {
     try {
-        await deleteUserById(req.params.id);
+        const channel = await deleteUserById(req.params.id);
+        await deleteChannelByID(channel[0]._id);
 
         res.status(200).send({
-            message: "Utilisateur supprimé avec succès !"
+            success: true,
+            message: "Utilisateur et sa chaîne supprimés avec succès !"
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
+            message: err
+        });
+    }
+};
+const setInactiveUser = async (req, res) => {
+    try {
+        const channel = await setInactiveUserById(req.params.id);
+        await setInactiveChannelByID(channel[0]._id);
+
+        res.status(200).send({
+            success: true,
+            message: "Utilisateur et sa chaîne passés inactifs avec succès !"
+        });
+    } catch (err) {
+        res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -518,7 +692,10 @@ const getFirstStream = (req, res) => {
             res.write(buffer)
         });
     } catch (e) {
-        res.status(404).send(e);
+        res.status(404).send({
+            success: false,
+            e
+        });
     }
 };
 const recordStream = async (req, res) => {
@@ -529,10 +706,12 @@ const recordStream = async (req, res) => {
         await recordVoice(channel, radio);
 
         res.status(200).send({
+            success: true,
             message: 'Record : On'
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -541,10 +720,12 @@ const stopStream = async (req, res) => {
     try {
         await stopRecordVoice();
         res.status(200).send({
+            success: true,
             message: 'Record : Off'
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -563,9 +744,13 @@ const costUsers = async (req, res) => {
     try {
         let users = await costAllUsers();
 
-        res.status(200).send(users);
+        res.status(200).send({
+            success: true,
+            users
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -574,9 +759,13 @@ const costSubscribe = async (req, res) => {
     try {
         let users = await costAllSubscribers();
 
-        res.status(200).send(users);
+        res.status(200).send({
+            success: true,
+            users
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -586,10 +775,12 @@ const costListen = async (req, res) => {
         let listen = await costAllListen();
 
         res.status(200).send({
+            success: true,
             total_ecoute: listen
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -599,10 +790,12 @@ const costStreamsListen = async (req, res) => {
         let listen = await costAllStreamsListen();
 
         res.status(200).send({
+            success: true,
             total_ecoute_stream: listen
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -612,10 +805,12 @@ const costRadiosListen = async (req, res) => {
         let listen = await costAllRadiosListen();
 
         res.status(200).send({
+            success: true,
             total_ecoute_radios: listen
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -625,10 +820,12 @@ const costRadios = async (req, res) => {
         let radios = await costAllRadios();
 
         res.status(200).send({
+            success: true,
             nombre_radios: radios
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -638,10 +835,12 @@ const costCreatedStream = async (req, res) => {
         let created_stream = await costAllCreatedStream();
 
         res.status(200).send({
+            success: true,
             stream_crée: created_stream
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -651,10 +850,12 @@ const costCreatedStreamForUser = async (req, res) => {
         let created_stream = await costAllCreatedStreamByUser(req.params.id);
 
         res.status(200).send({
+            success: true,
             stream_crée: created_stream
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -664,10 +865,12 @@ const costFavoriteForUser = async (req, res) => {
         let favoris = await costAllFavoriteForUser(req.params.id);
 
         res.status(200).send({
+            success: true,
             favoris: favoris
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -677,10 +880,12 @@ const costListenForUser = async (req, res) => {
         let listen = await costAllListenForUser(req.params.id);
 
         res.status(200).send({
+            success: true,
             nombre_ecoutes: listen
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -689,9 +894,13 @@ const costSignalementsForUser = async (req, res) => {
     try {
         let signalements = await costAllSignalementsForUser(req.params.channel_id);
 
-        res.status(200).send(signalements);
+        res.status(200).send({
+            success: true,
+            signalements
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -700,9 +909,13 @@ const costSignalements = async (req, res) => {
     try {
         let signalements = await costAllSignalements();
 
-        res.status(200).send(signalements);
+        res.status(200).send({
+            success: true,
+            signalements
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -711,9 +924,13 @@ const costActiveUsers = async (req, res) => {
     try {
         let users = await costAllActiveUsers();
 
-        res.status(200).send(users);
+        res.status(200).send({
+            success: true,
+            users
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -722,9 +939,13 @@ const costInactiveUsers = async (req, res) => {
     try {
         let users = await costAllInactiveUsers();
 
-        res.status(200).send(users);
+        res.status(200).send({
+            success: true,
+            users
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -734,10 +955,12 @@ const costActiveChannels = async (req, res) => {
         let channels = await costAllActiveChannels();
 
         res.status(200).send({
+            success: true,
             nombre_chaines_active: channels
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -747,10 +970,12 @@ const costInactiveChannels = async (req, res) => {
         let channels = await costAllInactiveChannels();
 
         res.status(200).send({
+            success: true,
             nombre_chaines_inactive: channels
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -760,10 +985,12 @@ const costBanishChannels = async (req, res) => {
         let channels = await costAllBanishChannels();
 
         res.status(200).send({
+            success: true,
             nombre_chaines_bannie: channels
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -772,9 +999,13 @@ const costRegisteredThisMonth = async (req, res) => {
     try {
         let registered = await costAllRegisteredThisMonth();
 
-        res.status(200).send(registered);
+        res.status(200).send({
+            success: true,
+            registered
+        });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -784,10 +1015,12 @@ const costPlanStreamForUser = async (req, res) => {
         let plan = await costAllPlanStreamForUser(req.params.id);
 
         res.status(200).send({
+            success: true,
             nombre_plannification: plan
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -797,10 +1030,12 @@ const costPlan = async (req, res) => {
         let plan = await costAllPlan();
 
         res.status(200).send({
+            success: true,
             nombre_plannification: plan
         });
     } catch (err) {
         res.status(400).send({
+            success: false,
             message: err
         });
     }
@@ -839,6 +1074,7 @@ module.exports = {
     getActiveUser: getActiveUser,
     getInactiveUser: getInactiveUser,
     deleteUser: deleteUser,
+    setInactiveUser: setInactiveUser,
 
     getFirstStream: getFirstStream,
     recordStream: recordStream,

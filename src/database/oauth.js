@@ -7,6 +7,7 @@ module.exports = injectedMySqlConnection => {
     return {
 
         register: register,
+        login: login,
         getUserFromCredentials: getUserFromCredentials,
         checkUserExist: checkUserExist
 
@@ -26,6 +27,22 @@ function register(data, registrationCallback){
         mySqlConnection.query(registerUserQuery, registrationCallback)
     });
 }
+
+const login = async (data, user, loginCallback) => {
+    if (data.password && user[0].password) {
+        const validPass = await bcrypt.compare(data.password, user[0].password);
+
+        if (!validPass) {
+            loginCallback({
+                error: 'Email ou mot de passe incorrect'
+            });
+        } else {
+            loginCallback({ error: null });
+        }
+    } else {
+        loginCallback({ error: 'Aucun mot de passe n\'a été rentré' });
+    }
+};
 
 
 function getUserFromCredentials(email, password, callback) {

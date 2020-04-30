@@ -1,7 +1,11 @@
-module.exports =  (router, app, authRoutesMethods) => {
+const { validateRequest } = require('../../utils/validators');
 
-    router.post('/register', authRoutesMethods.register);
-    router.post('/login', app.oauth.grant(), authRoutesMethods.login);
+module.exports =  (router, check, authRoutesMethods) => {
+
+    router.post('/register', validateRequest('register'), authRoutesMethods.register);
+
+    router.post('/login', validateRequest('login'), authRoutesMethods.login);
+
     router.get('/facebook/login/:token', authRoutesMethods.facebookLogin);
 
     return router

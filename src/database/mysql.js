@@ -5,12 +5,19 @@ let connection = null;
 
 function initConnection() {
     connection = mySql.createConnection({
+        host: 'localhost',
+        port: '8889',
+        user: 'root',
+        password: 'root',
+        database: 'DBTest'
+    });
+    /*connection = mySql.createConnection({
         host: process.env.HOST,
         port: process.env.MYSQL_PORT,
         user: process.env.USER,
         password: process.env.PASSWORD,
         database: process.env.DATABASE
-    })
+    });*/
 }
 
 function query(queryString, callback){

@@ -1,13 +1,14 @@
+const { validateRequest } = require('../../utils/validators');
 
-module.exports =  (router, app, restrictedAreaRoutesMethods) => {
+module.exports =  (router, check, app, restrictedAreaRoutesMethods) => {
 
     /**
      * ALL ROUTES FOR SIGNALEMENTS
      */
-    router.post('/signalements/channel/:id',  app.oauth.authorise(), restrictedAreaRoutesMethods.newSignalement);
+    router.post('/signalements/channel/:id', validateRequest('create signalement'), app.oauth.authorise(), restrictedAreaRoutesMethods.newSignalement);
     router.get('/signalements/all', app.oauth.authorise(), restrictedAreaRoutesMethods.getSignalements);
     router.get('/signalements/channel/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.getSignalementsByChannelID);
-    router.put('/signalement/update/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.updateSignalement);
+    router.put('/signalement/update/:id', validateRequest('update signalement'), app.oauth.authorise(), restrictedAreaRoutesMethods.updateSignalement);
     router.delete('/signalements/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.deleteSignalement);
 
     /**
@@ -17,7 +18,7 @@ module.exports =  (router, app, restrictedAreaRoutesMethods) => {
     router.get('/channels/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.getOneChannel);
     router.get('/channels/stream/all', app.oauth.authorise(), restrictedAreaRoutesMethods.getStreamChannel);
     router.get('/channels/banish/all', app.oauth.authorise(), restrictedAreaRoutesMethods.getBanishChannels);
-    router.put('/channels/update/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.updateChannel);
+    router.put('/channels/update/:id', validateRequest('update channel'), app.oauth.authorise(), restrictedAreaRoutesMethods.updateChannel);
     router.put('/channels/banish/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.banishChannel);
     router.put('/channels/unbanish/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.unbanChannel);
     router.delete('/channels/delete/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.deleteChannel);
@@ -25,10 +26,10 @@ module.exports =  (router, app, restrictedAreaRoutesMethods) => {
     /**
      * ALL ROUTES FOR RADIOS
      */
-    router.post('/radios', app.oauth.authorise(), restrictedAreaRoutesMethods.addRadio);
+    router.post('/radios', validateRequest('add new radio'), app.oauth.authorise(), restrictedAreaRoutesMethods.addRadio);
     router.get('/radios/all', app.oauth.authorise(), restrictedAreaRoutesMethods.getRadios);
     router.get('/radios/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.getOneRadio);
-    router.put('/radios/update/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.updateOneRadio);
+    router.put('/radios/update/:id', validateRequest('update radio'), app.oauth.authorise(), restrictedAreaRoutesMethods.updateOneRadio);
     router.delete('/radios/delete/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.deleteOneRadio);
 
     /**
@@ -39,11 +40,10 @@ module.exports =  (router, app, restrictedAreaRoutesMethods) => {
     router.get('/users/logged', app.oauth.authorise(), restrictedAreaRoutesMethods.getUserWithOAuth);
     router.get('/users/active', app.oauth.authorise(), restrictedAreaRoutesMethods.getActiveUser);
     router.get('/users/inactive', app.oauth.authorise(), restrictedAreaRoutesMethods.getInactiveUser);
-    router.put('/users/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.updateUser);
-    router.put('/users/password/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.updateUserPassword);
+    router.put('/users/:id', validateRequest('update user'), app.oauth.authorise(), restrictedAreaRoutesMethods.updateUser);
+    router.put('/users/password/:id', validateRequest('update password'), app.oauth.authorise(), restrictedAreaRoutesMethods.updateUserPassword);
+    router.put('/users/set/inactive/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.setInactiveUser);
     router.delete('/users/delete/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.deleteUser);
-    // Route à faire :
-    // Rendre un utilisateur inactif et faire la doc
 
     /**
      * ALL ROUTES FOR STREAMS
