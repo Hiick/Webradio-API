@@ -10,7 +10,7 @@ function initConnection() {
         user: process.env.USER,
         password: process.env.PASSWORD,
         database: process.env.DATABASE
-    });
+    })
 }
 
 function query(queryString, callback){
