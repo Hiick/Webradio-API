@@ -6,15 +6,8 @@ const mysql = require('mysql'),
     mongoose = require('mongoose'),
     axios = require('axios');
 
-let idUser;
 
-const pool = mysql.createPool({
-    host: process.env.HOST,
-    port: process.env.MYSQL_PORT,
-    user: process.env.USER,
-    password: process.env.PASSWORD,
-    database: process.env.DATABASE
-});
+let idUser;
 
 module.exports = generateOAuth2Token = (id) => {
     return new Promise(async (resolve) => {
@@ -69,6 +62,29 @@ const updateOneUser = (user) => {
                 reject('Aucun utilisateur trouvé')
             }
             resolve(rows);
+        });
+    });
+};
+
+const userBack = (user, data) => {
+    return new Promise((resolve, reject) => {
+        bcrypt.hash(data.password, 10, (err, hash) => {
+            const query = `
+                UPDATE users
+                SET
+                username = '${data.username}',
+                avatar = '${user[0].avatar}',
+                password = '${hash}',
+                status = 'ACTIVE'
+                WHERE user_id = ${user[0].user_id}`;
+
+            pool.query(query, async (err, rows) => {
+                if (err) throw err;
+                if (rows && rows.length === 0 || !rows) {
+                    reject('Aucun utilisateur trouvé')
+                }
+                resolve(rows);
+            });
         });
     });
 };
@@ -198,6 +214,23 @@ const getUserById = (id) => {
     })
 };
 
+const getUserByEmail = (email) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT *
+            FROM users
+            WHERE email = ${email}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
+            }
+            resolve(rows);
+        });
+    })
+};
+
 const getUserWithOAuthToken = (token) => {
     return new Promise((resolve, reject) => {
         const query = `
@@ -250,45 +283,58 @@ const getAllInactiveUsers = () => {
 };
 
 const deleteUserById = async (id) => {
-    return new Promise((resolve, reject) => {
-        const query = `
-        SELECT FROM users
-        WHERE user_id = ${id}`;
-
-        pool.query(query, async (err, rows) => {
-            if (err) reject(err);
-            if (rows && rows.length === 0 || !rows) {
-                reject('Aucun utilisateur trouvé')
-            }
-            console.log('ROWS ' + rows)
-            //resolve(rows);
-        });
-    });
-    /*return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         const query = `
         DELETE FROM users
         WHERE user_id = ${id}`;
 
+        const channel = await Channel.find({ user_id: id });
+
         pool.query(query, async (err, rows) => {
             if (err) reject(err);
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
             }
-            resolve(rows);
+
+            resolve(channel);
         });
-    });*/
+    });
+};
+
+const setInactiveUserById = async (id) => {
+    return new Promise(async (resolve, reject) => {
+        const query = `
+        UPDATE users 
+        SET 
+        status = 'INACTIVE'
+        WHERE user_id = ${id}`;
+
+        const channel = await Channel.find({ user_id: id });
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun utilisateur trouvé')
+            }
+
+            resolve(channel);
+        });
+    });
 };
 
 module.exports = {
     generateOAuth2Token,
+    userBack,
     addChannelIdToNewUser,
     updateOneUser,
     updateOneUserPassword,
     facebookUserLogin,
     getAllUsers,
     getUserById,
+    getUserByEmail,
     getUserWithOAuthToken,
     getAllActiveUsers,
     getAllInactiveUsers,
-    deleteUserById
+    deleteUserById,
+    setInactiveUserById
 };
