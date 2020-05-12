@@ -480,7 +480,7 @@ const sendEmail = async (user, res) => {
                           <tr>
                             <td>
                               <p class="f-fallback sub">Si vous avez des problèmes avec le bouton, copiez et coller l'url ci dessous dans votre moteur de recherche.</p>
-                              <p class="f-fallback sub">https://webradio-stream.herokuapp.com/reset/${token}</p>
+                              <p class="f-fallback sub">https://webradio-stream.herokuapp.com/reset/password/${token}</p>
                             </td>
                           </tr>
                         </table>
