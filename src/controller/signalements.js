@@ -9,6 +9,13 @@ const pool = mysql.createPool({
     password: process.env.PASSWORD,
     database: process.env.DATABASE
 });
+/*const pool = mysql.createPool({
+    host: 'localhost',
+    port: '8889',
+    user: 'root',
+    password: 'root',
+    database: 'DBTest'
+});*/
 
 /**
  * @TODO Penser à changer de la table user à channel

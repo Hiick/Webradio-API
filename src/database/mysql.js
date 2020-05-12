@@ -11,6 +11,13 @@ function initConnection() {
         password: process.env.PASSWORD,
         database: process.env.DATABASE
     })
+    /*connection = mySql.createConnection({
+        host: 'localhost',
+        port: '8889',
+        user: 'root',
+        password: 'root',
+        database: 'DBTest'
+    })*/
 }
 
 function query(queryString, callback){

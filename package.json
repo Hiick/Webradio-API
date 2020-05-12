@@ -1,12 +1,12 @@
 {
-  "name": "OAuth2",
+  "name": "Webradio",
   "version": "1.0.0",
   "engines": {
     "node": "12.13.1"
   },
   "description": "",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "node app.js"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +30,7 @@
     "express": "^4.17.1",
     "express-session": "^1.17.0",
     "express-validator": "^6.4.0",
+    "jsonwebtoken": "^8.5.1",
     "mocha": "^7.1.2",
     "moment": "^2.24.0",
     "mongodb": "^3.5.3",
@@ -39,6 +40,7 @@
     "node-audiorecorder": "^2.0.0",
     "node-fetch": "^2.6.0",
     "node-oauth2-server": "^2.4.0",
+    "nodemailer": "^6.4.6",
     "nodemon": "^2.0.2",
     "npm": "^6.14.4",
     "oauth2-server": "^3.0.1",

@@ -39,7 +39,32 @@ const getAllRadios = async () => {
     return await Radio.find();
 };
 const getRadioByID = async (radio_id) => {
-    return await Radio.findById({ _id: radio_id });
+    const radio = await Radio.findById({ _id: radio_id});
+
+    if (radio) {
+        await Radio.updateOne({ _id: radio_id }, {
+            $inc: {
+                nbr_ecoute: 1,
+                nbr_ecoute_global: 1
+            }
+        });
+
+        return radio;
+    }
+};
+const removeOneRadioListener = async (radio_id) => {
+    const radio = await Radio.findById({ _id: radio_id });
+
+    if (radio.nbr_ecoute > 0) {
+        await Radio.updateOne({ _id: radio_id }, {
+            $inc: {
+                nbr_ecoute: -1
+            }
+        });
+    } else {
+        return 'Il ne peut pas y avoir moins de 0 écoutant'
+    }
+
 };
 const updateRadioByID = async (data, id) => {
     const radioExist = Radio.findById({ _id: id});
@@ -67,5 +92,6 @@ module.exports = {
     getAllRadios,
     getRadioByID,
     updateRadioByID,
-    deleteRadioByID
+    deleteRadioByID,
+    removeOneRadioListener
 };

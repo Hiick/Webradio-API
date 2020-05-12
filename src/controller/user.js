@@ -16,6 +16,14 @@ const pool = mysql.createPool({
     password: process.env.PASSWORD,
     database: process.env.DATABASE
 });
+/*const pool = mysql.createPool({
+    host: 'localhost',
+    port: '8889',
+    user: 'root',
+    password: 'root',
+    database: 'DBTest'
+});*/
+
 
 module.exports = generateOAuth2Token = (id) => {
     return new Promise(async (resolve) => {
@@ -62,6 +70,26 @@ const updateOneUser = (user) => {
         SET 
         username = '${user.username}', 
         avatar = '${user.avatar}'
+        WHERE user_id = ${user.user_id}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun utilisateur trouvé')
+            }
+            resolve(rows);
+        });
+    });
+};
+
+const updateOneUserWithRole = (user) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+        UPDATE users 
+        SET 
+        username = '${user.username}', 
+        avatar = '${user.avatar}',
+        role = '${user.avatar}'
         WHERE user_id = ${user.user_id}`;
 
         pool.query(query, async (err, rows) => {
@@ -227,7 +255,7 @@ const getUserByEmail = (email) => {
         const query = `
             SELECT *
             FROM users
-            WHERE email = ${email}`;
+            WHERE email = ${JSON.stringify(email)}`;
 
         pool.query(query, async (err, rows) => {
             if (err) throw err;
@@ -236,6 +264,43 @@ const getUserByEmail = (email) => {
             }
             resolve(rows);
         });
+    })
+};
+
+const getUserByResetPassword = (token) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT *
+            FROM users
+            WHERE user_id = ${token.user_id} AND email = ${JSON.stringify(token.email)}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
+            }
+            resolve(rows);
+        });
+    })
+};
+
+const updatePassword = (password, user) => {
+    return new Promise((resolve, reject) => {
+        bcrypt.hash(password, 10, (err, hash) => {
+            const query = `
+            UPDATE users 
+            SET 
+            password = '${hash}'
+            WHERE user_id = ${user[0].user_id} AND email = ${JSON.stringify(user[0].email)}`;
+
+            pool.query(query, async (err, rows) => {
+                if (err) throw err;
+                if (rows && rows.length === 0 || !rows) {
+                    reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
+                }
+                resolve(rows);
+            });
+        })
     })
 };
 
@@ -335,6 +400,7 @@ module.exports = {
     userBack,
     addChannelIdToNewUser,
     updateOneUser,
+    updateOneUserWithRole,
     updateOneUserPassword,
     facebookUserLogin,
     getAllUsers,
@@ -344,5 +410,7 @@ module.exports = {
     getAllActiveUsers,
     getAllInactiveUsers,
     deleteUserById,
-    setInactiveUserById
+    setInactiveUserById,
+    getUserByResetPassword,
+    updatePassword
 };

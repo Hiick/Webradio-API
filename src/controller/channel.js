@@ -6,7 +6,34 @@ const getAllChannels = async () => {
 };
 
 const getChannel = async (channel_id) => {
-    return await Channel.findById({ _id: channel_id})
+    const channel = await Channel.findById({ _id: channel_id});
+
+    if (channel) {
+        await Channel.updateOne({ _id: channel_id }, {
+            $inc: {
+                nbr_ecoute: 1,
+                nbr_ecoute_global: 1
+            }
+        });
+
+        return channel;
+    }
+
+};
+
+const removeOneListener = async (channel_id) => {
+    const channel = await Channel.findById({ _id: channel_id});
+
+    if (channel.nbr_ecoute > 0) {
+        await Channel.updateOne({ _id: channel_id }, {
+            $inc: {
+                nbr_ecoute: -1
+            }
+        });
+    } else {
+        return 'Il ne peut pas y avoir moins de 0 écoutant'
+    }
+
 };
 
 const updateChannelByID = async (channel_id, data) => {
@@ -49,6 +76,7 @@ const setActiveChannelByID = async (channel_id) => {
 module.exports = {
     getAllChannels,
     getChannel,
+    removeOneListener,
     updateChannelByID,
     getAllStreamChannels,
     deleteChannelByID,

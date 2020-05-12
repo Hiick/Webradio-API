@@ -25,6 +25,14 @@ const validateRequest = (code) => {
         ]
     }
 
+    if (code === 'update user with role') {
+        return [
+            check('username', "Le nom d'utilisateur doit être de 3 caractères minimum et ne peux pas contenir d'espace").notEmpty().trim().isLength({ min: 3 }),
+            check('avatar', "L'avatar ne peux pas être vide").notEmpty(),
+            check('role', "Le rôle ne peux pas être vide").notEmpty()
+        ]
+    }
+
     if (code === 'create signalement' || code === 'update signalement') {
         return [
             check('motif', "Le motif ne peux pas être vide").notEmpty()
@@ -43,6 +51,18 @@ const validateRequest = (code) => {
             check('radio_name', "Le nom de radio ne peux pas être vide").notEmpty(),
             check('logo', "Le nom de radio ne peux pas être vide").notEmpty(),
             check('direct_url', "Le nom de radio ne peux pas être vide").notEmpty(),
+        ]
+    }
+
+    if (code === 'forgot password email') {
+        return [
+            check('email', "Merci d'indiquer une adresse email valide").notEmpty().isEmail()
+        ]
+    }
+
+    if (code === 'forgot password valid pass') {
+        return [
+            check('password', "Merci de rentrer un mot de passe de 8 caractères minimum, avec au moins une majuscule et une minuscule").notEmpty().isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])/,)
         ]
     }
 
