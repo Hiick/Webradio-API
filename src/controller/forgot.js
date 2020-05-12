@@ -465,7 +465,7 @@ const sendEmail = async (user, res) => {
                               <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation">
                                 <tr>
                                   <td align="center">
-                                    <a href="https://webradio-stream.herokuapp.com/reset/password/${token}" class="f-fallback button" target="_blank">Réinitialiser votre mot de passe</a>
+                                    <a href="https://webradio-stream.herokuapp.com/auth/reset/password/${token}" class="f-fallback button" target="_blank">Réinitialiser votre mot de passe</a>
                                   </td>
                                 </tr>
                               </table>
@@ -480,7 +480,7 @@ const sendEmail = async (user, res) => {
                           <tr>
                             <td>
                               <p class="f-fallback sub">Si vous avez des problèmes avec le bouton, copiez et coller l'url ci dessous dans votre moteur de recherche.</p>
-                              <p class="f-fallback sub">https://webradio-stream.herokuapp.com/reset/password/${token}</p>
+                              <p class="f-fallback sub">https://webradio-stream.herokuapp.com/auth/reset/password/${token}</p>
                             </td>
                           </tr>
                         </table>
