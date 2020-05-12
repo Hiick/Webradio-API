@@ -234,7 +234,7 @@ const resetPassword = async (req, res) => {
                 })
             } else {
                 try {
-                    const user = await getUserByResetPassword(decode);
+                    const user = await getUserByResetPassword(result);
 
                     if (user) {
                         await updatePassword(req.body.password, user);
