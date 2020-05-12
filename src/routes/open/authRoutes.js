@@ -6,7 +6,12 @@ module.exports =  (router, check, authRoutesMethods) => {
 
     router.post('/login', validateRequest('login'), authRoutesMethods.login);
 
+    router.post('/forgot/password', validateRequest('forgot password email'), authRoutesMethods.forgotPassword);
+
+    router.post('/reset/password/:token', validateRequest('forgot password valid pass'), authRoutesMethods.resetPassword);
+
     router.get('/facebook/login/:token', authRoutesMethods.facebookLogin);
+
 
     return router
 

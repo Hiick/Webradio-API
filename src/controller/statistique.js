@@ -14,6 +14,13 @@ const pool = mysql.createPool({
     password: process.env.PASSWORD,
     database: process.env.DATABASE
 });
+/*const pool = mysql.createPool({
+    host: 'localhost',
+    port: '8889',
+    user: 'root',
+    password: 'root',
+    database: 'DBTest'
+});*/
 
 const Radio = require('../models/radio'),
     Channel = require('../models/channel');
@@ -57,14 +64,14 @@ const costAllListen = async () => {
     const radios = await Radio.find();
 
     for (let i = 0; i < channels.length; i++) {
-        if (!!channels[i].nbr_ecoute) {
-            result.push(parseInt(channels[i].nbr_ecoute));
+        if (!!channels[i].nbr_ecoute_global) {
+            result.push(parseInt(channels[i].nbr_ecoute_global));
         }
     }
 
     for (let i = 0; i < radios.length; i++) {
-        if (!!radios[i].nbr_ecoute) {
-            result.push(parseInt(radios[i].nbr_ecoute));
+        if (!!radios[i].nbr_ecoute_global) {
+            result.push(parseInt(radios[i].nbr_ecoute_global));
         }
     }
     const arrSum = arr => arr.reduce((a,b) => a + b, 0);
@@ -79,8 +86,8 @@ const costAllStreamsListen = async () => {
     const channels = await Channel.find();
 
     for (let i = 0; i < channels.length; i++) {
-        if (!!channels[i].nbr_ecoute) {
-            result.push(parseInt(channels[i].nbr_ecoute));
+        if (!!channels[i].nbr_ecoute_global) {
+            result.push(parseInt(channels[i].nbr_ecoute_global));
         }
     }
 
@@ -96,8 +103,8 @@ const costAllRadiosListen = async () => {
     const radios = await Radio.find();
 
     for (let i = 0; i < radios.length; i++) {
-        if (!!radios[i].nbr_ecoute) {
-            result.push(parseInt(radios[i].nbr_ecoute));
+        if (!!radios[i].nbr_ecoute_global) {
+            result.push(parseInt(radios[i].nbr_ecoute_global));
         }
     }
 
@@ -158,7 +165,7 @@ const costAllListenForUser = async (id) => {
     const channel = await Channel.findById({ _id: id });
 
     if (channel) {
-        return channel.nbr_ecoute
+        return channel.nbr_ecoute_global
     } else {
         return { message: 'No channel found' }
     }

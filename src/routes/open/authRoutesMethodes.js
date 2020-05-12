@@ -1,8 +1,11 @@
 const mongoose = require('mongoose'),
     { validationResult } = require('express-validator'),
+    jwt = require('jsonwebtoken'),
     Channel = require('../../models/channel');
-const { facebookUserLogin, addChannelIdToNewUser, generateOAuth2Token, getUserByEmail, userBack } = require('../../controller/user');
+
+const { facebookUserLogin, addChannelIdToNewUser, generateOAuth2Token, getUserByEmail, userBack, getUserByResetPassword, updatePassword } = require('../../controller/user');
 const { setActiveChannelByID } = require('../../controller/channel');
+const { sendEmail } = require('../../controller/forgot');
 
 let user;
 
@@ -12,7 +15,9 @@ module.exports = injectedUser => {
     return {
         register: register,
         login: login,
-        facebookLogin: facebookLogin
+        facebookLogin: facebookLogin,
+        forgotPassword: forgotPassword,
+        resetPassword: resetPassword
     }
 };
 
@@ -128,7 +133,7 @@ const login = async (req, res) => {
         };
 
         try {
-            const userExist = await getUserByEmail(JSON.stringify(data.email));
+            const userExist = await getUserByEmail(data.email);
 
             if (userExist) {
                 if (userExist[0].status === "INACTIVE") {
@@ -182,5 +187,70 @@ const facebookLogin = async (req, res) => {
             error: true,
             message : e
         })
+    }
+};
+
+const forgotPassword = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        try {
+            const user = await getUserByEmail(req.body.email);
+
+            if (user) {
+                await sendEmail(user, res);
+            }
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                message: err
+            });
+        }
+    }
+};
+
+const resetPassword = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        const token = req.params.token;
+        const decode = jwt.verify(token, process.env.JWT_SECRET, async (err, result) => {
+            if (err) {
+                res.status(400).send({
+                    success: false,
+                    message: 'Le token n\'est pas au bon format. Il devrait être de type JWT'
+                })
+            } else {
+                try {
+                    const user = await getUserByResetPassword(decode);
+
+                    if (user) {
+                        await updatePassword(req.body.password, user);
+
+                        res.status(200).send({
+                            success: true,
+                            password: 'Updated !'
+                        })
+                    }
+                } catch (e) {
+                    res.status(400).send({
+                        success: false,
+                        error: e
+                    })
+                }
+            }
+        });
     }
 };

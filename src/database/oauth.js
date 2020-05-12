@@ -22,7 +22,7 @@ function register(data, registrationCallback){
         const registerUserQuery = `
               INSERT INTO users (email, username, password, status, avatar, role, subscribe)
               VALUES ('${data.email}','${data.username}',
-              '${hash}', 'ACTIVE', '${base_avatar}', 'USER',false)`;
+              '${hash}', 'ACTIVE', '${base_avatar}', 'ROLE_USER',false)`;
 
         mySqlConnection.query(registerUserQuery, registrationCallback)
     });

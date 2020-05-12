@@ -21,6 +21,7 @@ module.exports =  (router, check, app, restrictedAreaRoutesMethods) => {
     router.put('/channels/update/:id', validateRequest('update channel'), app.oauth.authorise(), restrictedAreaRoutesMethods.updateChannel);
     router.put('/channels/banish/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.banishChannel);
     router.put('/channels/unbanish/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.unbanChannel);
+    router.put('/channels/listener/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.removeChannelListener);
     router.delete('/channels/delete/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.deleteChannel);
 
     /**
@@ -41,6 +42,7 @@ module.exports =  (router, check, app, restrictedAreaRoutesMethods) => {
     router.get('/users/active', app.oauth.authorise(), restrictedAreaRoutesMethods.getActiveUser);
     router.get('/users/inactive', app.oauth.authorise(), restrictedAreaRoutesMethods.getInactiveUser);
     router.put('/users/:id', validateRequest('update user'), app.oauth.authorise(), restrictedAreaRoutesMethods.updateUser);
+    router.put('/users/admin/:id', validateRequest('update user with role'), app.oauth.authorise(), restrictedAreaRoutesMethods.updateUserWithRole);
     router.put('/users/password/:id', validateRequest('update password'), app.oauth.authorise(), restrictedAreaRoutesMethods.updateUserPassword);
     router.put('/users/set/inactive/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.setInactiveUser);
     router.delete('/users/delete/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.deleteUser);

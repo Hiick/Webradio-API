@@ -10,6 +10,7 @@ const {
 const {
     getAllChannels,
     getChannel,
+    removeOneListener,
     updateChannelByID,
     getAllStreamChannels,
     deleteChannelByID,
@@ -19,12 +20,14 @@ const {
 
 const {
     updateOneUser,
+    updateOneUserWithRole,
     updateOneUserPassword,
     getAllUsers,
     getUserById,
     getAllActiveUsers,
     getAllInactiveUsers,
     deleteUserById,
+    getUserByEmail,
     getUserWithOAuthToken,
     setInactiveUserById
 } = require('../../controller/user');
@@ -34,7 +37,8 @@ const {
     getAllRadios,
     getRadioByID,
     updateRadioByID,
-    deleteRadioByID
+    deleteRadioByID,
+    removeOneRadioListener
 } = require('../../controller/radio');
 
 const {
@@ -294,6 +298,25 @@ const getOneChannel = async (req, res) => {
         });
     }
 };
+const removeChannelListener = async (req, res) => {
+    try {
+        const response = await removeOneListener(req.params.id);
+
+        if (response) {
+            res.status(200).send({success: false, response});
+        } else {
+            res.status(200).send({
+                success: true,
+                listener: -1
+            });
+        }
+    } catch (err) {
+        res.status(400).send({
+            success: false,
+            message: err
+        });
+    }
+};
 const updateChannel = async (req, res) => {
     const errors = validationResult(req);
 
@@ -409,6 +432,25 @@ const addRadio = async (req, res) => {
         }
     }
 };
+const removeRadioListener = async (req, res) => {
+    try {
+        const response = await removeOneRadioListener(req.params.id);
+
+        if (response) {
+            res.status(200).send({success: false, response});
+        } else {
+            res.status(200).send({
+                success: true,
+                listener: -1
+            });
+        }
+    } catch (err) {
+        res.status(400).send({
+            success: false,
+            message: err
+        });
+    }
+};
 const getRadios = async (req, res) => {
     try {
         let radios = await getAllRadios();
@@ -515,6 +557,38 @@ const updateUser = async (req, res) => {
 
         try {
             await updateOneUser(updateUser);
+
+            res.status(200).send({
+                success: true,
+                message: 'Utilisateur mis à jour !'
+            });
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                message: err
+            });
+        }
+    }
+};
+const updateUserWithRole = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        let updateUser = {
+            user_id: req.params.id,
+            username: req.body.username,
+            avatar: req.body.avatar,
+            role: req.body.role
+        };
+
+        try {
+            await updateOneUserWithRole(updateUser);
 
             res.status(200).send({
                 success: true,
@@ -1054,6 +1128,7 @@ module.exports = {
     banishChannel: banishChannel,
     unbanChannel: unbanChannel,
     getChannels: getChannels,
+    removeChannelListener: removeChannelListener,
     getOneChannel: getOneChannel,
     updateChannel: updateChannel,
     getStreamChannel: getStreamChannel,
@@ -1063,10 +1138,12 @@ module.exports = {
     addRadio: addRadio,
     getRadios:getRadios,
     getOneRadio:getOneRadio,
+    removeRadioListener: removeRadioListener,
     updateOneRadio: updateOneRadio,
     deleteOneRadio: deleteOneRadio,
 
     updateUser: updateUser,
+    updateUserWithRole: updateUserWithRole,
     updateUserPassword: updateUserPassword,
     getUsers: getUsers,
     getOneUser: getOneUser,
