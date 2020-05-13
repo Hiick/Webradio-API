@@ -20,18 +20,22 @@ const addNewRadio = async (data) => {
         };
 
         const newRadio = Radio(radio);
-        newRadio.save((e) => {
+        newRadio.save((e, response) => {
             if (e) {
                 throw new Error('Error with Radio register');
+            } else {
+                radio = response
             }
         });
 
         return {
-            message: 'Radio ajoutée avec succès'
+            message: 'Radio ajoutée avec succès',
+            radio: radio
         }
     } else {
         return {
-            message: 'La radio existe déjà'
+            message: 'La radio existe déjà',
+            radio: radioExist
         }
     }
 };
