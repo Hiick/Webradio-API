@@ -348,7 +348,7 @@ const getAllInactiveUsers = () => {
         pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
-                reject('Aucun utilisateur trouvé')
+                reject('Aucun utilisateur inactif trouvé')
             }
             resolve(rows);
         });
