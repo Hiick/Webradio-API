@@ -49,8 +49,8 @@ const validateRequest = (code) => {
     if (code === 'add new radio' || code === 'update radio') {
         return [
             check('radio_name', "Le nom de radio ne peux pas être vide").notEmpty(),
-            check('logo', "Le nom de radio ne peux pas être vide").notEmpty(),
-            check('direct_url', "Le nom de radio ne peux pas être vide").notEmpty(),
+            check('logo', "Le logo ne peux pas être vide").notEmpty(),
+            check('direct_url', "L'url ne peux pas être vide").notEmpty(),
         ]
     }
 
