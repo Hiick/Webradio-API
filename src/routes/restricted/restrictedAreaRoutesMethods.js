@@ -155,11 +155,11 @@ const deleteSignalement = async (req, res) => {
     };
 
     try {
-        const signal = await deleteSignalementByID(signalement);
+        await deleteSignalementByID(signalement);
 
         res.status(200).send({
             success: true,
-            signal,
+            message: "Signalement supprimé avec succès !",
         });
     } catch (err) {
         res.status(400).send({
