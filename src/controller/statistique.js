@@ -252,25 +252,6 @@ const costAllBanishChannels = async () => {
     return await Channel.find({ status: 'BANISH' }).countDocuments();
 };
 
-const costAllRegisteredThisMonth = async () => {
-    return new Promise((resolve, reject) => {
-        const query = `
-        SELECT COUNT(*) as nombre_inscrits_ce_mois 
-        FROM users 
-        WHERE created_at > CURRENT_DATE AND created_at < CURRENT_DATE + INTERVAL 1 MONTH
-        `;
-
-        pool.query(query, (err, rows) => {
-            if (err) reject(err);
-            if (rows && rows.length === 0 || !rows) {
-                reject('Aucun utilisateur trouvé')
-            }
-            resolve(rows)
-        });
-
-    });
-};
-
 const costAllPlanStreamForUser = async (id) => {
     const channel = await Channel.findById({ _id: id });
 
@@ -309,7 +290,6 @@ module.exports = {
     costAllInactiveUsers: costAllInactiveUsers,
     costAllInactiveChannels: costAllInactiveChannels,
     costAllBanishChannels: costAllBanishChannels,
-    costAllRegisteredThisMonth: costAllRegisteredThisMonth,
     costAllPlanStreamForUser: costAllPlanStreamForUser,
     costAllPlan: costAllPlan
 };

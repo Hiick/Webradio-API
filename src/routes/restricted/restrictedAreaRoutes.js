@@ -60,7 +60,6 @@ module.exports =  (router, check, app, restrictedAreaRoutesMethods) => {
     router.get('/stats/users', app.oauth.authorise(), restrictedAreaRoutesMethods.costUsers);
     router.get('/stats/users/active', app.oauth.authorise(), restrictedAreaRoutesMethods.costActiveUsers);
     router.get('/stats/users/inactive', app.oauth.authorise(), restrictedAreaRoutesMethods.costInactiveUsers);
-    router.get('/stats/users/registered/month', app.oauth.authorise(), restrictedAreaRoutesMethods.costRegisteredThisMonth);
     router.get('/stats/subscribers', app.oauth.authorise(), restrictedAreaRoutesMethods.costSubscribe);
     router.get('/stats/listen', app.oauth.authorise(), restrictedAreaRoutesMethods.costListen);
     router.get('/stats/listen/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.costListenForUser);

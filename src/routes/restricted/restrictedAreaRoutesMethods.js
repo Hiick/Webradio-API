@@ -1069,21 +1069,6 @@ const costBanishChannels = async (req, res) => {
         });
     }
 };
-const costRegisteredThisMonth = async (req, res) => {
-    try {
-        let registered = await costAllRegisteredThisMonth();
-
-        res.status(200).send({
-            success: true,
-            registered
-        });
-    } catch (err) {
-        res.status(400).send({
-            success: false,
-            message: err
-        });
-    }
-};
 const costPlanStreamForUser = async (req, res) => {
     try {
         let plan = await costAllPlanStreamForUser(req.params.id);
@@ -1174,7 +1159,6 @@ module.exports = {
     costInactiveUsers: costInactiveUsers,
     costInactiveChannels: costInactiveChannels,
     costBanishChannels: costBanishChannels,
-    costRegisteredThisMonth: costRegisteredThisMonth,
     costPlanStreamForUser: costPlanStreamForUser,
     costPlan: costPlan
 };
