@@ -63,8 +63,8 @@ module.exports =  (router, check, app, restrictedAreaRoutesMethods) => {
     router.get('/stats/subscribers', app.oauth.authorise(), restrictedAreaRoutesMethods.costSubscribe);
     router.get('/stats/listen', app.oauth.authorise(), restrictedAreaRoutesMethods.costListen);
     router.get('/stats/listen/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.costListenForUser);
-    router.get('/stats/listen/streams', app.oauth.authorise(), restrictedAreaRoutesMethods.costStreamsListen);
-    router.get('/stats/listen/radios', app.oauth.authorise(), restrictedAreaRoutesMethods.costRadiosListen);
+    router.get('/stats/all/listen/streams', app.oauth.authorise(), restrictedAreaRoutesMethods.costStreamsListen);
+    router.get('/stats/all/listen/radios', app.oauth.authorise(), restrictedAreaRoutesMethods.costRadiosListen);
     router.get('/stats/channels/active', app.oauth.authorise(), restrictedAreaRoutesMethods.costActiveChannels);
     router.get('/stats/channels/inactive', app.oauth.authorise(), restrictedAreaRoutesMethods.costInactiveChannels);
     router.get('/stats/channels/banish', app.oauth.authorise(), restrictedAreaRoutesMethods.costBanishChannels);
