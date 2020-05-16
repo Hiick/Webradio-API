@@ -72,5 +72,3 @@ function checkUserExist(email, callback) {
     mySqlConnection.query(query, sqlCallback)
 }
 
-
-

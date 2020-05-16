@@ -27,9 +27,10 @@ const {
     getAllActiveUsers,
     getAllInactiveUsers,
     deleteUserById,
-    getUserByEmail,
+    userCanStream,
     getUserWithOAuthToken,
-    setInactiveUserById
+    setInactiveUserById,
+    unsubscribeUser
 } = require('../../controller/user');
 
 const {
@@ -71,6 +72,9 @@ const {
 
 const Channel = require('../../models/channel'),
     { validationResult } = require('express-validator'),
+    STRIPE_API = require('../../controller/stripe'),
+    axios = require('axios'),
+    qs = require('querystring'),
     TailingReadableStream = require('tailing-stream');
 
 /**
@@ -522,7 +526,7 @@ const deleteOneRadio = async (req, res) => {
         if (deleted) {
             res.status(200).send({
                 success: true,
-                message: 'Chaîne supprimée'
+                message: 'Radio supprimée'
             });
         }
     } catch (err) {
@@ -1103,6 +1107,107 @@ const costPlan = async (req, res) => {
  * END STATISTIQUES METHODES
  */
 
+/**
+ * STRIPE METHODES
+ */
+const getAllSubscriptions = async (req, res) => {
+    res.status(200).send(await STRIPE_API.getProductsAndPlans());
+}
+
+const checkIfUserIsSubscribe = async (req, res) => {
+    const subscribe = await getUserById(req.params.user_id);
+
+    if (!subscribe[0].stripe_id) {
+        res.status(400).send({
+            success: false,
+            message: "L'utilisateur n'est pas abonné"
+        })
+    } else {
+        let config = {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': "Bearer " + process.env.STRIPE_API_KEY,
+            }
+        }
+
+        let url = 'https://api.stripe.com/v1/customers/'+subscribe[0].stripe_id;
+
+        await axios.get(url, config).then(async (response) => {
+            if (response.data.subscriptions.data[0].status === 'active') {
+                res.status(200).send({
+                    success: true,
+                    message: "L'utilisateur est toujours abonné"
+                })
+            } else {
+                await unsubscribeUser(req.params.user_id);
+
+                res.status(400).send({
+                    success: true,
+                    message: "L'utilisateur n'est plus abonné"
+                })
+            }
+        })
+    }
+}
+
+const doPayment = async (req, res) => {
+    let parsedPlan = JSON.parse(req.body.plan);
+
+    let config = {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': "Bearer " + process.env.STRIPE_API_KEY,
+        }
+    }
+
+    let card = {
+        type: 'card',
+        'card[number]': req.body.card_number,
+        'card[exp_month]': req.body.card_exp_month,
+        'card[exp_year]': '20' + req.body.card_exp_year,
+        'card[cvc]': req.body.card_cvc
+    }
+
+    await axios.post('https://api.stripe.com/v1/payment_methods', qs.stringify(card), config).then(async (response) => {
+        let paymentMethodId = response.data.id
+
+        let payment = {
+            email: req.body.email,
+            planId: parsedPlan.id,
+            paymentMethodId: paymentMethodId
+        }
+
+        try {
+            const subscription = await STRIPE_API.createCustomerAndSubscription(payment);
+
+            if (subscription.plan.active) {
+                const subscribe = await userCanStream(payment.email, subscription.plan.active, subscription.customer);
+
+                if (subscribe) {
+                    res.status(200).send({
+                        success: true,
+                        message: "L'utilisateur : " + payment.email + ' peut désormais streamer !'
+                    });
+                }
+            } else {
+                res.status(400).send({
+                    success: false,
+                    error: 'Paiement accepté mais plan inactif'
+                });
+            }
+        } catch (e) {
+            res.status(400).send({
+                success: false,
+                error: 'Paiement refusé'
+            });
+        }
+    })
+}
+
+/**
+ * END STRIPE METHODES
+ */
+
 module.exports = {
     newSignalement: newSignalement,
     getSignalements: getSignalements,
@@ -1160,5 +1265,9 @@ module.exports = {
     costInactiveChannels: costInactiveChannels,
     costBanishChannels: costBanishChannels,
     costPlanStreamForUser: costPlanStreamForUser,
-    costPlan: costPlan
+    costPlan: costPlan,
+
+    getAllSubscriptions: getAllSubscriptions,
+    checkIfUserIsSubscribe: checkIfUserIsSubscribe,
+    doPayment: doPayment
 };

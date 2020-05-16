@@ -395,6 +395,45 @@ const setInactiveUserById = async (id) => {
     });
 };
 
+const userCanStream = async (email, status, stripe_id) => {
+    return new Promise(async (resolve, reject) => {
+        const query = `
+        UPDATE users 
+        SET 
+        subscribe = ${status},
+        stripe_id = ${JSON.stringify(stripe_id)}
+        WHERE email = ${JSON.stringify(email)}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun utilisateur trouvé')
+            }
+
+            resolve(true);
+        });
+    });
+}
+
+const unsubscribeUser = async (user_id) => {
+    return new Promise(async (resolve, reject) => {
+        const query = `
+        UPDATE users 
+        SET 
+        subscribe = false,
+        WHERE user_id = ${user_id}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun utilisateur trouvé')
+            }
+
+            resolve(true);
+        });
+    });
+}
+
 module.exports = {
     generateOAuth2Token,
     userBack,
@@ -412,5 +451,7 @@ module.exports = {
     deleteUserById,
     setInactiveUserById,
     getUserByResetPassword,
-    updatePassword
+    updatePassword,
+    userCanStream,
+    unsubscribeUser
 };
