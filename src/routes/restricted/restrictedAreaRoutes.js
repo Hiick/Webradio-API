@@ -77,6 +77,14 @@ module.exports =  (router, check, app, restrictedAreaRoutesMethods) => {
     router.get('/stats/signalements', app.oauth.authorise(), restrictedAreaRoutesMethods.costSignalements);
     router.get('/stats/signalements/:channel_id', app.oauth.authorise(), restrictedAreaRoutesMethods.costSignalementsForUser);
 
+    /**
+     * ALL ROUTES FOR STRIPE
+     */
+    router.get('/subscribe/subscriptions', app.oauth.authorise(), restrictedAreaRoutesMethods.getAllSubscriptions);
+    router.get('/subscribe/check/:user_id', app.oauth.authorise(), restrictedAreaRoutesMethods.checkIfUserIsSubscribe);
+    router.post('/subscribe/payment', app.oauth.authorise(), restrictedAreaRoutesMethods.doPayment);
+
+
     return router
 
 };
