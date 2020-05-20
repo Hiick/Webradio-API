@@ -30,7 +30,8 @@ const {
     userCanStream,
     getUserWithOAuthToken,
     setInactiveUserById,
-    unsubscribeUser
+    unsubscribeUser,
+    getUserByEmail
 } = require('../../controller/user');
 
 const {
@@ -65,7 +66,6 @@ const {
     costAllInactiveUsers,
     costAllInactiveChannels,
     costAllBanishChannels,
-    costAllRegisteredThisMonth,
     costAllPlanStreamForUser,
     costAllPlan
 } = require('../../controller/statistique');
@@ -1151,57 +1151,78 @@ const checkIfUserIsSubscribe = async (req, res) => {
 }
 
 const doPayment = async (req, res) => {
-    let parsedPlan = JSON.parse(req.body.plan);
+    const errors = validationResult(req);
 
-    let config = {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': "Bearer " + process.env.STRIPE_API_KEY,
-        }
-    }
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        let parsedPlan = JSON.parse(req.body.plan);
 
-    let card = {
-        type: 'card',
-        'card[number]': req.body.card_number,
-        'card[exp_month]': req.body.card_exp_month,
-        'card[exp_year]': '20' + req.body.card_exp_year,
-        'card[cvc]': req.body.card_cvc
-    }
-
-    await axios.post('https://api.stripe.com/v1/payment_methods', qs.stringify(card), config).then(async (response) => {
-        let paymentMethodId = response.data.id
-
-        let payment = {
-            email: req.body.email,
-            planId: parsedPlan.id,
-            paymentMethodId: paymentMethodId
+        let config = {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': "Bearer " + process.env.STRIPE_API_KEY,
+            }
         }
 
         try {
-            const subscription = await STRIPE_API.createCustomerAndSubscription(payment);
+            const user = await getUserByEmail(req.body.email);
 
-            if (subscription.plan.active) {
-                const subscribe = await userCanStream(payment.email, subscription.plan.active, subscription.customer);
+            let card = {
+                type: 'card',
+                'card[number]': req.body.card_number,
+                'card[exp_month]': req.body.card_exp_month,
+                'card[exp_year]': '20' + req.body.card_exp_year,
+                'card[cvc]': req.body.card_cvc
+            }
 
-                if (subscribe) {
-                    res.status(200).send({
-                        success: true,
-                        message: "L'utilisateur : " + payment.email + ' peut désormais streamer !'
+            await axios.post('https://api.stripe.com/v1/payment_methods', qs.stringify(card), config).then(async (response) => {
+                let paymentMethodId = response.data.id
+
+                let payment = {
+                    email: req.body.email,
+                    planId: parsedPlan.id,
+                    paymentMethodId: paymentMethodId
+                }
+
+                try {
+                    const subscription = await STRIPE_API.createCustomerAndSubscription(payment);
+
+                    if (subscription.plan.active) {
+                        const subscribe = await userCanStream(payment.email, subscription.plan.active, subscription.customer);
+                        if (subscribe) {
+                            await STRIPE_API.sendConfirmPaymentEmail(payment.email, user);
+
+                            res.status(200).send({
+                                success: true,
+                                message: "L'utilisateur : " + payment.email + ' peut désormais streamer !',
+                                emailSent: true
+                            });
+                        }
+                    } else {
+                        res.status(400).send({
+                            success: false,
+                            error: 'Paiement accepté mais plan inactif'
+                        });
+                    }
+                } catch (e) {
+                    res.status(400).send({
+                        success: false,
+                        error: 'Paiement refusé'
                     });
                 }
-            } else {
-                res.status(400).send({
-                    success: false,
-                    error: 'Paiement accepté mais plan inactif'
-                });
-            }
+            })
         } catch (e) {
             res.status(400).send({
                 success: false,
-                error: 'Paiement refusé'
+                error: "L'email reçu ne correspond à aucun utilisateur connu chez nous."
             });
         }
-    })
+    }
 }
 
 /**
