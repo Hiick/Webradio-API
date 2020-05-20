@@ -7,7 +7,7 @@ const validateRequest = (code) => {
     }
 
     if (code === 'login') {
-        return  [check('email', "Merci d'indiquer une adresse email valide").notEmpty().isEmail(),]
+        return  [check('email', "Merci d'indiquer une adresse email valide").notEmpty().isEmail()]
     }
 
     if (code === 'register') {
@@ -63,6 +63,17 @@ const validateRequest = (code) => {
     if (code === 'forgot password valid pass') {
         return [
             check('password', "Merci de rentrer un mot de passe de 8 caractères minimum, avec au moins une majuscule et une minuscule").notEmpty().isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])/,)
+        ]
+    }
+
+    if (code === 'subscribe payment') {
+        return [
+            check('card_number', "Le numéro de carte ne dois pas être vide et dois faire 16 chiffres").notEmpty().isLength({ min: 16, max: 16 }),
+            check('card_exp_month', "Le numéro d'expiration du mois ne dois pas être vide et dois faire 2 chiffres").notEmpty().isLength({ min: 2, max: 2 }),
+            check('card_exp_year', "Le numéro d'expiration de l'année ne dois pas être vide et dois faire 2 chiffres").notEmpty().isLength({ min: 2, max: 2 }),
+            check('card_cvc', "Le numéro CVC ne dois pas être vide et dois faire 3 chiffres").notEmpty().isLength({ min: 3, max: 3 }),
+            check('email', "Merci d'indiquer une adresse email valide").notEmpty().isEmail(),
+            check('plan', "Le plan stripe en doit pas être vide").notEmpty()
         ]
     }
 
