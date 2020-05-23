@@ -434,6 +434,36 @@ const unsubscribeUser = async (user_id) => {
     });
 }
 
+const generatePassword = (length) => {
+    let result           = '';
+    let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&(§!-_';
+    let charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
+const addNewUser = async (data) => {
+    let base_avatar = "https://firebasestorage.googleapis.com/v0/b/webradio-stream.appspot.com/o/base_url.png?alt=media&token=a996c02e-ae13-40aa-b224-c2f4d703c606";
+
+    return new Promise(async (resolve, reject) => {
+        let password = generatePassword(8);
+
+        bcrypt.hash(password, 10, (err, hash) => {
+            const query = `
+              INSERT INTO users (email, username, password, status, avatar, role, subscribe)
+              VALUES ('${data.email}','${data.username}',
+              '${hash}', 'ACTIVE', '${base_avatar}', 'ROLE_USER',false)`;
+
+            pool.query(query, async (err, rows) => {
+                if (err) throw err;
+                resolve(password)
+            });
+        });
+    });
+}
+
 module.exports = {
     generateOAuth2Token,
     userBack,
@@ -453,5 +483,6 @@ module.exports = {
     getUserByResetPassword,
     updatePassword,
     userCanStream,
-    unsubscribeUser
+    unsubscribeUser,
+    addNewUser
 };

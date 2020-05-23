@@ -15,7 +15,8 @@ const {
     getAllStreamChannels,
     deleteChannelByID,
     getAllBanishChannels,
-    setInactiveChannelByID
+    setInactiveChannelByID,
+    addChannelIdToUser
 } = require('../../controller/channel');
 
 const {
@@ -31,7 +32,8 @@ const {
     getUserWithOAuthToken,
     setInactiveUserById,
     unsubscribeUser,
-    getUserByEmail
+    getUserByEmail,
+    addNewUser
 } = require('../../controller/user');
 
 const {
@@ -70,11 +72,14 @@ const {
     costAllPlan
 } = require('../../controller/statistique');
 
+const { sendPasswordEmail } = require("../../controller/password");
+
 const Channel = require('../../models/channel'),
     { validationResult } = require('express-validator'),
     STRIPE_API = require('../../controller/stripe'),
     axios = require('axios'),
     qs = require('querystring'),
+    mongoose = require('mongoose'),
     TailingReadableStream = require('tailing-stream');
 
 /**
@@ -750,6 +755,84 @@ const setInactiveUser = async (req, res) => {
         });
     }
 };
+
+const createNewUser = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        let data = {
+            email: req.body.email.toLowerCase(),
+            username: req.body.username
+        };
+
+        try {
+            const userExist = await getUserByEmail(data.email);
+
+            if (userExist) {
+                res.status(400).send({
+                    success: false,
+                    message: 'L\'utilisateur existe déjà'
+                });
+            }
+        } catch (e) {
+            let password = await addNewUser(data);
+            const getUserId = await getUserByEmail(data.email);
+
+            let channel = {
+                user_id: getUserId[0].user_id,
+                channel_name: req.body.username,
+                avatar: "https://firebasestorage.googleapis.com/v0/b/webradio-stream.appspot.com/o/base_url.png?alt=media&token=a996c02e-ae13-40aa-b224-c2f4d703c606",
+                Flux: [{
+                    stream_url: "",
+                    first_source: {
+                        source_url: "",
+                        name: "",
+                        volume_source: ""
+                    },
+                    second_source: {
+                        source_url: "",
+                        name: "",
+                        volume_source: ""
+                    }
+                }],
+                Stream: [{
+                    _id: new mongoose.Types.ObjectId,
+                    volume_1: "",
+                    volume_2: "",
+                    direct_url: "",
+                    createdAt: new Date(),
+                }],
+                radio: false,
+                status: "ACTIVE",
+                live: false,
+                createdAt: new Date()
+            };
+
+            const newChannel = Channel(channel);
+            newChannel.save(async (e, result) => {
+                try {
+                    console.log(result)
+                } catch (e) {
+                    res.status(401).send(e);
+                }
+            });
+
+            await sendPasswordEmail(data.email, password);
+
+            res.status(200).send({
+                success: true,
+                emailSent: true,
+                message: "L'utilisateur à été ajouté avec succès ! Son mot de passe vient de lui être envoyé par mail"
+            })
+        }
+    }
+};
 /**
  * END USERS METHODES
  */
@@ -1263,6 +1346,7 @@ module.exports = {
     getInactiveUser: getInactiveUser,
     deleteUser: deleteUser,
     setInactiveUser: setInactiveUser,
+    createNewUser: createNewUser,
 
     getFirstStream: getFirstStream,
     recordStream: recordStream,

@@ -77,6 +77,13 @@ const validateRequest = (code) => {
         ]
     }
 
+    if (code === 'create user') {
+        return [
+            check('email', "Merci d'indiquer une adresse email valide").notEmpty().isEmail(),
+            check('username', "Le nom d'utilisateur doit être de 3 caractères minimum et ne peux pas contenir d'espace").notEmpty().trim().isLength({ min: 3 }),
+        ]
+    }
+
 };
 
 module.exports = {
