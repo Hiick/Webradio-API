@@ -1170,7 +1170,7 @@ const doPayment = async (req, res) => {
         }
 
         try {
-            const user = await getUserByEmail(req.body.email);
+            const user = await getUserByEmail(req.body.email.toLowerCase());
 
             let card = {
                 type: 'card',
@@ -1184,7 +1184,7 @@ const doPayment = async (req, res) => {
                 let paymentMethodId = response.data.id
 
                 let payment = {
-                    email: req.body.email,
+                    email: req.body.email.toLowerCase(),
                     planId: parsedPlan.id,
                     paymentMethodId: paymentMethodId
                 }
