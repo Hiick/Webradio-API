@@ -37,6 +37,7 @@ module.exports =  (router, check, app, restrictedAreaRoutesMethods) => {
      * ALL ROUTES FOR USERS
      */
     router.get('/user/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.getOneUser);
+    router.post('/users/create', validateRequest('create user'), app.oauth.authorise(), restrictedAreaRoutesMethods.createNewUser);
     router.get('/users', app.oauth.authorise(), restrictedAreaRoutesMethods.getUsers);
     router.get('/users/logged', app.oauth.authorise(), restrictedAreaRoutesMethods.getUserWithOAuth);
     router.get('/users/active', app.oauth.authorise(), restrictedAreaRoutesMethods.getActiveUser);
