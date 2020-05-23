@@ -30,7 +30,7 @@ const register = async (req, res) => {
         }, errors.array())
     } else {
         let data = {
-            email: req.body.email,
+            email: req.body.email.toLowerCase(),
             username: req.body.username,
             password: req.body.password
         };
@@ -128,7 +128,7 @@ const login = async (req, res) => {
         }, errors.array())
     } else {
         let data = {
-            email: req.body.email,
+            email: req.body.email.toLowerCase(),
             password: req.body.password
         };
 
@@ -201,7 +201,7 @@ const forgotPassword = async (req, res) => {
         });
     } else {
         try {
-            const user = await getUserByEmail(req.body.email);
+            const user = await getUserByEmail(req.body.email.toLowerCase());
 
             if (user) {
                 await sendEmail(user, res);
