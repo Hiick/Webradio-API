@@ -3,7 +3,7 @@ const mySql = require('mysql');
 
 let connection = null;
 
-function initConnection() {
+function query(queryString, callback){
     connection = mySql.createConnection({
         host: process.env.HOST,
         port: process.env.MYSQL_PORT,
@@ -11,18 +11,13 @@ function initConnection() {
         password: process.env.PASSWORD,
         database: process.env.DATABASE
     })
-   /* connection = mySql.createConnection({
-        host: 'localhost',
-        port: '8889',
-        user: 'root',
-        password: 'root',
-        database: 'DBTest'
-    })*/
-}
-
-function query(queryString, callback){
-
-    initConnection();
+    /* connection = mySql.createConnection({
+         host: 'localhost',
+         port: '8889',
+         user: 'root',
+         password: 'root',
+         database: 'DBTest'
+     })*/
 
     connection.query(queryString, function(error, results, fields){
         console.log('mySql: query: error is: ', error, ' and results are: ', results);
