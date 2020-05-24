@@ -23,12 +23,9 @@ function initConnection() {
 function query(queryString, callback){
 
     initConnection();
-    connection.connect();
 
     connection.query(queryString, function(error, results, fields){
         console.log('mySql: query: error is: ', error, ' and results are: ', results);
-
-        connection.end();
 
         callback(createDataResponseObject(error, results))
     })
