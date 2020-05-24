@@ -15,8 +15,7 @@ const {
     getAllStreamChannels,
     deleteChannelByID,
     getAllBanishChannels,
-    setInactiveChannelByID,
-    addChannelIdToUser
+    setInactiveChannelByID
 } = require('../../controller/channel');
 
 const {
@@ -33,7 +32,8 @@ const {
     setInactiveUserById,
     unsubscribeUser,
     getUserByEmail,
-    addNewUser
+    addNewUser,
+    addChannelIdToNewUser
 } = require('../../controller/user');
 
 const {
@@ -756,6 +756,10 @@ const setInactiveUser = async (req, res) => {
     }
 };
 
+const addChannelIdToUser = async (user_id, channel_id) => {
+    await addChannelIdToNewUser(user_id, channel_id);
+};
+
 const createNewUser = async (req, res) => {
     const errors = validationResult(req);
 
@@ -817,9 +821,13 @@ const createNewUser = async (req, res) => {
             const newChannel = Channel(channel);
             newChannel.save(async (e, result) => {
                 try {
-                    console.log(result)
+                    await addChannelIdToUser(getUserId[0].user_id, result._id);
                 } catch (e) {
-                    res.status(401).send(e);
+                    console.log(e);
+                }
+
+                if (e) {
+                    res.status(401).send(e)
                 }
             });
 
