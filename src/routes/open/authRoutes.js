@@ -4,6 +4,8 @@ module.exports =  (router, check, authRoutesMethods) => {
 
     router.post('/register', validateRequest('register'), authRoutesMethods.register);
 
+    router.post('/user/confirm/:token', authRoutesMethods.confirmUser);
+
     router.post('/login', validateRequest('login'), authRoutesMethods.login);
 
     router.post('/forgot/password', validateRequest('forgot password email'), authRoutesMethods.forgotPassword);

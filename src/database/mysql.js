@@ -11,13 +11,13 @@ function query(queryString, callback){
         password: process.env.PASSWORD,
         database: process.env.DATABASE
     })
-    /* connection = mySql.createConnection({
-         host: 'localhost',
-         port: '8889',
-         user: 'root',
-         password: 'root',
-         database: 'DBTest'
-     })*/
+    /*connection = mySql.createConnection({
+        host: 'localhost',
+        port: '8889',
+        user: 'root',
+        password: 'root',
+        database: 'DBTest'
+    })*/
 
     connection.query(queryString, function(error, results, fields){
         console.log('mySql: query: error is: ', error, ' and results are: ', results);
