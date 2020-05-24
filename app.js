@@ -15,6 +15,17 @@ const express= require('express'),
     app = express(),
     port = process.env.PORT || 3000;
 
+const whitelist = [process.env.FRONTEND_URL, process.env.BACKEND_URL];
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1 || !origin) {
+            callback(null, true)
+        } else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    }
+}
+
 /**
  * Uncomment this line for lunch scraping module
  * --
@@ -28,14 +39,6 @@ app.oauth = oAuth2Server({
     debug: true
 });
 
-app.all('*', function(req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    next();
-});
-
 const restrictedAreaRoutesMethods = require('./src/routes/restricted/restrictedAreaRoutesMethods'),
     restrictedAreaRoutes = require('./src/routes/restricted/restrictedAreaRoutes')(express.Router(), check, app, restrictedAreaRoutesMethods),
     authRoutesMethods = require('./src/routes/open/authRoutesMethodes')(user),
@@ -43,6 +46,8 @@ const restrictedAreaRoutesMethods = require('./src/routes/restricted/restrictedA
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors(corsOptions));
+
 app.use(cookieParser());
 
 app.use(passport.initialize());
