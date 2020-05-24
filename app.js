@@ -11,6 +11,7 @@ const express= require('express'),
     bodyParser = require('body-parser'),
     { check } = require('express-validator'),
     path = require('path'),
+    cors = require('cors'),
     app = express(),
     port = process.env.PORT || 3000;
 
