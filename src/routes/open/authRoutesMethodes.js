@@ -3,9 +3,10 @@ const mongoose = require('mongoose'),
     jwt = require('jsonwebtoken'),
     Channel = require('../../models/channel');
 
-const { facebookUserLogin, addChannelIdToNewUser, generateOAuth2Token, getUserByEmail, userBack, getUserByResetPassword, updatePassword } = require('../../controller/user');
+const { facebookUserLogin, addChannelIdToNewUser, generateOAuth2Token, getUserByEmail, userBack, getUserByResetPassword, updatePassword, confirmUserEmail } = require('../../controller/user');
 const { setActiveChannelByID } = require('../../controller/channel');
 const { sendEmail } = require('../../controller/forgot');
+const { sendConfirmationEmail } = require('../../controller/confirmation');
 
 let user;
 
@@ -14,6 +15,7 @@ module.exports = injectedUser => {
 
     return {
         register: register,
+        confirmUser: confirmUser,
         login: login,
         facebookLogin: facebookLogin,
         forgotPassword: forgotPassword,
@@ -113,10 +115,63 @@ const register = async (req, res) => {
                             token: token
                         }, dataResponseObject.error)
                     });
+
+                    /*sendConfirmationEmail(dataResponseObject.results.insertId, data.email, res).then(() => {
+                        sendResponse(res, {
+                            message: message,
+                            email: "Un email pour confirmer l'adresse email à été envoyé"
+                        })
+                    })*/
                 });
             });
         }
     }
+};
+
+const confirmUser = async (req, res) => {
+    const token = req.params.token;
+    await jwt.verify(token, process.env.JWT_SECRET, async (err, result) => {
+        if (err) {
+            res.status(400).send({
+                success: false,
+                error: true,
+                message: 'Le token n\'est pas au bon format. Il devrait être de type JWT'
+            })
+        } else {
+            try {
+                const user = await getUserByResetPassword(result);
+
+                if (user) {
+                    if (user[0].confirmed) {
+                        res.status(400).send({
+                            success: false,
+                            error: true,
+                            message: 'Il semblerait que l\'utilisateur à déjà vérifié son adresse email'
+                        })
+                    } else {
+                        await confirmUserEmail(user);
+
+                        res.status(200).send({
+                            success: true,
+                            error: false,
+                            message: 'Email vérifié avec succès !'
+                        })
+                    }
+                    /*await updatePassword(req.body.password, user);
+
+                    res.status(200).send({
+                        success: true,
+                        password: 'Updated !'
+                    })*/
+                }
+            } catch (e) {
+                res.status(400).send({
+                    success: false,
+                    error: e
+                })
+            }
+        }
+    });
 };
 
 const login = async (req, res) => {
@@ -141,7 +196,12 @@ const login = async (req, res) => {
                         error: true,
                         message: 'Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !'
                     })
-                } else {
+                } /*else if (!userExist[0].confirmed) {
+                    sendResponse(res, {
+                        error: true,
+                        message: 'Veuillez confirmer votre adresse email pour pouvoir vous connecter !'
+                    })
+                }*/ else {
                     user.login(data, userExist, dataResponseObject => {
                         const message =  dataResponseObject.error === null  ? "Connected !" : "Failed to connect";
                         generateOAuth2Token(userExist[0].user_id).then( token => {

@@ -111,7 +111,8 @@ const userBack = (user, data) => {
                 username = '${data.username}',
                 avatar = '${user[0].avatar}',
                 password = '${hash}',
-                status = 'ACTIVE'
+                status = 'ACTIVE',
+                confirmed = true
                 WHERE user_id = ${user[0].user_id}`;
 
             pool.query(query, async (err, rows) => {
@@ -283,6 +284,24 @@ const getUserByResetPassword = (token) => {
         });
     })
 };
+
+const confirmUserEmail = (user) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+           UPDATE users 
+           SET 
+           confirmed = true
+           WHERE user_id = ${user[0].user_id} AND email = ${JSON.stringify(user[0].email)}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
+            }
+            resolve(rows);
+        });
+    })
+}
 
 const updatePassword = (password, user) => {
     return new Promise((resolve, reject) => {
@@ -484,5 +503,6 @@ module.exports = {
     updatePassword,
     userCanStream,
     unsubscribeUser,
-    addNewUser
+    addNewUser,
+    confirmUserEmail
 };
