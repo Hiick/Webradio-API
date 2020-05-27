@@ -15,7 +15,7 @@ const express= require('express'),
     app = express(),
     port = process.env.PORT || 3000;
 
-const whitelist = [process.env.FRONTEND_URL, process.env.BACKEND_URL];
+const whitelist = [process.env.FRONTEND_URL, process.env.BACKEND_URL, process.env.MOBILE_URL];
 const corsOptions = {
     origin: function (origin, callback) {
         if (whitelist.indexOf(origin) !== -1 || !origin) {
