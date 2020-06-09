@@ -1,6 +1,6 @@
-const { validateRequest } = require('../../utils/validators');
+const {validateRequest} = require('../../utils/validators');
 
-module.exports =  (router, check, app, restrictedAreaRoutesMethods) => {
+module.exports = (router, check, app, restrictedAreaRoutesMethods) => {
 
     /**
      * ALL ROUTES FOR SIGNALEMENTS
@@ -83,7 +83,6 @@ module.exports =  (router, check, app, restrictedAreaRoutesMethods) => {
     router.get('/subscribe/subscriptions', app.oauth.authorise(), restrictedAreaRoutesMethods.getAllSubscriptions);
     router.get('/subscribe/check/:user_id', app.oauth.authorise(), restrictedAreaRoutesMethods.checkIfUserIsSubscribe);
     router.post('/subscribe/payment', validateRequest('subscribe payment'), app.oauth.authorise(), restrictedAreaRoutesMethods.doPayment);
-
 
     return router
 
