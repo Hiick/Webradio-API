@@ -14,6 +14,9 @@ module.exports =  (router, check, authRoutesMethods) => {
 
     router.get('/facebook/login/:token', authRoutesMethods.facebookLogin);
 
+    router.get('/radios/all', authRoutesMethods.getRadios);
+
+
 
     return router
 

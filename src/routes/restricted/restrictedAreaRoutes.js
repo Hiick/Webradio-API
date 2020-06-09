@@ -28,7 +28,6 @@ module.exports =  (router, check, app, restrictedAreaRoutesMethods) => {
      * ALL ROUTES FOR RADIOS
      */
     router.post('/radios', validateRequest('add new radio'), app.oauth.authorise(), restrictedAreaRoutesMethods.addRadio);
-    router.get('/radios/all', app.oauth.authorise(), restrictedAreaRoutesMethods.getRadios);
     router.get('/radios/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.getOneRadio);
     router.put('/radios/update/:id', validateRequest('update radio'), app.oauth.authorise(), restrictedAreaRoutesMethods.updateOneRadio);
     router.delete('/radios/delete/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.deleteOneRadio);

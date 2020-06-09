@@ -1,10 +1,13 @@
 require('dotenv').config();
 const AudioRecorder = require('node-audiorecorder'),
     fs = require('fs'),
-    moment = require('moment'),
+    createBuffer = require('audio-buffer-from'),
     Radio = require('../models/radio'),
     Channel = require('../models/channel'),
+    toWav = require('audiobuffer-to-wav'),
     path = require('path');
+
+const Lame = require("node-lame").Lame;
 
 const recordVoice = async (channel, radio) => {
 
@@ -45,6 +48,43 @@ const recordVoice = async (channel, radio) => {
 
             const fileStream = fs.createWriteStream(filename, { encoding: 'binary' });
             audioRecorder.start().stream().pipe(fileStream);
+
+            let fileSize = 0;
+            let finalSize = 0;
+
+            setInterval(async () => {
+                fs.readFile(fileStream.path,  async (err, buffer) => {
+                    if (err) {
+                        throw err;
+                    }
+
+                    // Regarder createFile
+                    const cutStream = fs.createWriteStream('Stream/stream_'+channel+buffer.length+'.mp3');
+
+                    if (fileSize === 0) {
+                        cutStream.write(buffer);
+                    } else if (finalSize === buffer.length) {
+                        clearInterval();
+                    } else {
+                        let test = Buffer.from(buffer)
+
+                        setTimeout(() => {
+                            let encoder = new Lame({
+                                output: createBuffer(test.slice(finalSize, test.length)),
+                                bitrate: 192
+                            }).setFile('Stream/stream_'+channel+buffer.length+'.mp3');
+
+                            encoder.encode().catch(error => {
+                                console.log(error)
+                            })
+                        }, 1000)
+                    }
+
+                    fileSize = buffer;
+                    finalSize = buffer.length;
+                });
+            }, 2000)
+
             return file;
 
         }
