@@ -190,7 +190,7 @@ const login = async (req, res) => {
         };
 
         try {
-            const userExist = await getUserByEmail(data.email);
+            const userExist = await getUserByEmail(JSON.stringify(data.email));
 
             if (userExist) {
                 if (userExist[0].status === "INACTIVE") {
