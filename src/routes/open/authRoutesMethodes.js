@@ -263,7 +263,7 @@ const forgotPassword = async (req, res) => {
         });
     } else {
         try {
-            const user = await getUserByEmail(req.body.email.toLowerCase());
+            const user = await getUserByEmail(JSON.stringify(req.body.email.toLowerCase()));
 
             if (user) {
                 await sendEmail(user, res);
