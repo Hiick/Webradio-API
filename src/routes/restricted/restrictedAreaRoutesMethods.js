@@ -38,7 +38,6 @@ const {
 
 const {
     addNewRadio,
-    getAllRadios,
     getRadioByID,
     updateRadioByID,
     deleteRadioByID,
@@ -460,21 +459,7 @@ const removeRadioListener = async (req, res) => {
         });
     }
 };
-const getRadios = async (req, res) => {
-    try {
-        let radios = await getAllRadios();
 
-        res.status(200).send({
-            success: true,
-            radios
-        });
-    } catch (err) {
-        res.status(400).send({
-            success: false,
-            message: err
-        });
-    }
-};
 const getOneRadio = async (req, res) => {
     try {
         let radio = await getRadioByID(req.params.id);
@@ -1338,7 +1323,6 @@ module.exports = {
     getBanishChannels: getBanishChannels,
 
     addRadio: addRadio,
-    getRadios:getRadios,
     getOneRadio:getOneRadio,
     removeRadioListener: removeRadioListener,
     updateOneRadio: updateOneRadio,

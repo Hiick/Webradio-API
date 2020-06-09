@@ -7,6 +7,7 @@ const { facebookUserLogin, addChannelIdToNewUser, generateOAuth2Token, getUserBy
 const { setActiveChannelByID } = require('../../controller/channel');
 const { sendEmail } = require('../../controller/forgot');
 const { sendConfirmationEmail } = require('../../controller/confirmation');
+const { getAllRadios } = require('../../controller/radio');
 
 let user;
 
@@ -19,7 +20,8 @@ module.exports = injectedUser => {
         login: login,
         facebookLogin: facebookLogin,
         forgotPassword: forgotPassword,
-        resetPassword: resetPassword
+        resetPassword: resetPassword,
+        getRadios: getRadios
     }
 };
 
@@ -311,6 +313,22 @@ const resetPassword = async (req, res) => {
                     })
                 }
             }
+        });
+    }
+};
+
+const getRadios = async (req, res) => {
+    try {
+        let radios = await getAllRadios();
+
+        res.status(200).send({
+            success: true,
+            radios
+        });
+    } catch (err) {
+        res.status(400).send({
+            success: false,
+            message: err
         });
     }
 };
