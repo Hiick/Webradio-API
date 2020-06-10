@@ -81,7 +81,11 @@ describe('User end-to-end and unit tests', () => {
     }, 9000000);
 
     test("Login user", async () => {
-        const browser = await puppeteer.launch()
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: true,
+            slowMo: 250
+        })
         const page = await browser.newPage()
 
         await login(page);

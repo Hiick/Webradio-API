@@ -9,20 +9,20 @@ const mysql = require('mysql'),
 
 let idUser;
 
-const pool = mysql.createPool({
+/*const pool = mysql.createPool({
     host: process.env.HOST,
     port: process.env.MYSQL_PORT,
     user: process.env.USER,
     password: process.env.PASSWORD,
     database: process.env.DATABASE
-});
-/*const pool = mysql.createPool({
+});*/
+const pool = mysql.createPool({
     host: 'localhost',
     port: '8889',
     user: 'root',
     password: 'root',
     database: 'DBTest'
-});*/
+});
 
 
 module.exports = generateOAuth2Token = (id) => {
@@ -471,9 +471,9 @@ const addNewUser = async (data) => {
 
         bcrypt.hash(password, 10, (err, hash) => {
             const query = `
-              INSERT INTO users (email, username, password, status, avatar, role, subscribe)
-              VALUES ('${data.email}','${data.username}',
-              '${hash}', 'ACTIVE', '${base_avatar}', 'ROLE_USER',false)`;
+              INSERT INTO users (email, username, password, status, avatar, role, subscribe, confirmed)
+              VALUES ('${JSON.stringify(data.email)}','${JSON.stringify(data.username)}',
+              '${hash}', 'ACTIVE', '${base_avatar}', 'ROLE_USER',false, false)`;
 
             pool.query(query, async (err, rows) => {
                 if (err) throw err;

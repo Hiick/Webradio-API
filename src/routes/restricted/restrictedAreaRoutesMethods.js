@@ -761,7 +761,7 @@ const createNewUser = async (req, res) => {
         };
 
         try {
-            const userExist = await getUserByEmail(data.email);
+            const userExist = await getUserByEmail(JSON.stringify(data.email));
 
             if (userExist) {
                 res.status(400).send({
@@ -771,7 +771,7 @@ const createNewUser = async (req, res) => {
             }
         } catch (e) {
             let password = await addNewUser(data);
-            const getUserId = await getUserByEmail(data.email);
+            const getUserId = await getUserByEmail(JSON.stringify(data.email));
 
             let channel = {
                 user_id: getUserId[0].user_id,
