@@ -7,7 +7,8 @@ const AudioRecorder = require('node-audiorecorder'),
     toWav = require('audiobuffer-to-wav'),
     path = require('path');
 
-const Lame = require("node-lame").Lame;
+const AudioContext = require('web-audio-api').AudioContext;
+const audioContext = new AudioContext;
 
 const recordVoice = async (channel, radio) => {
 
@@ -58,8 +59,7 @@ const recordVoice = async (channel, radio) => {
                         throw err;
                     }
 
-                    // Regarder createFile
-                    const cutStream = fs.createWriteStream('Stream/stream_'+channel+buffer.length+'.mp3');
+                    const cutStream = fs.createWriteStream('Stream/cut_'+channel+'_'+buffer.length+'.mp3');
 
                     if (fileSize === 0) {
                         cutStream.write(buffer);
@@ -68,15 +68,22 @@ const recordVoice = async (channel, radio) => {
                     } else {
                         let test = Buffer.from(buffer)
 
-                        setTimeout(() => {
-                            let encoder = new Lame({
-                                output: createBuffer(test.slice(finalSize, test.length)),
-                                bitrate: 192
-                            }).setFile('Stream/stream_'+channel+buffer.length+'.mp3');
+                        let audio = createBuffer(test.slice(finalSize, test.length))
 
-                            encoder.encode().catch(error => {
-                                console.log(error)
-                            })
+                        setTimeout(async () => {
+                            await audioContext.decodeAudioData(new Buffer.from(audio), data => {
+                                let wav = toWav(data);
+                                let chunk = new Uint8Array(wav);
+                                console.log(chunk);
+                                fs.appendFile('Stream/cut_'+channel+'_'+buffer.length+'.mp3', new Buffer(chunk), function (err) {
+                                    if (err) {
+                                        console.log(err)
+                                    }
+                                });
+
+                            }, error => {
+                                console.log('Error : ' + error)
+                            });
                         }, 1000)
                     }
 
