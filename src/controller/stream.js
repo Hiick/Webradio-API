@@ -75,7 +75,7 @@ const recordVoice = async (channel, radio) => {
                                 let wav = toWav(data);
                                 let chunk = new Uint8Array(wav);
                                 console.log(chunk);
-                                fs.appendFile('Stream/cut_'+channel+'_'+buffer.length+'.mp3', new Buffer(chunk), function (err) {
+                                fs.appendFile('Stream/cut_'+channel+'_'+buffer.length+'.mp3', new Buffer(chunk), (err) => {
                                     if (err) {
                                         console.log(err)
                                     }
