@@ -20,6 +20,7 @@ const whitelist = [
     process.env.BACKEND_URL,
     process.env.MOBILE_URL,
     process.env.IONIC_URL,
+    process.env.EXTERNAL_URL,
     process.env.API_TESTER];
 const corsOptions = {
     origin: function (origin, callback) {
