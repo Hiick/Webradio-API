@@ -56,7 +56,11 @@ describe('User end-to-end and unit tests', () => {
     }
 
     test("Register new user", async () => {
-        const browser = await puppeteer.launch()
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: true,
+            slowMo: 250
+        })
         const page = await browser.newPage()
 
         await page.goto('https://api-tester.hiick.now.sh/')
@@ -99,7 +103,7 @@ describe('User end-to-end and unit tests', () => {
         await browser.close();
     }, 9000000);
 
-    /*test("Forgot Password Send Email", async () => {
+    test("Forgot Password Send Email", async () => {
         const browser = await puppeteer.launch()
         const page = await browser.newPage()
 
@@ -119,7 +123,7 @@ describe('User end-to-end and unit tests', () => {
         expect(JSON.parse(text)).toMatchObject({ response: { accepted: [ "alex.mignon77@gmail.com" ] }})
 
         await browser.close();
-    }, 9000000);*/
+    }, 9000000);
 
     test("Get connected user", async () => {
         const browser = await puppeteer.launch()
