@@ -253,7 +253,6 @@ describe('User end-to-end and unit tests', () => {
         const page = await browser.newPage()
 
         await page.goto('https://api-tester.hiick.now.sh/')
-        //await loginAndGetTokenToContinue(page)
 
         await page.click('form#get_all_radios_form input[type="submit"]')
 
@@ -279,5 +278,122 @@ describe('User end-to-end and unit tests', () => {
 
         await browser.close();
     }, 9000000)
+
+    test("Get all channels", async () => {
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: true,
+            slowMo: 150
+        })
+        const page = await browser.newPage()
+
+        await login(page)
+
+        await page.click('form#get_all_channel_form input[type="submit"]')
+
+        await waitForResponse(page,"https://webradio-stream.herokuapp.com/auth/channels/all");
+
+        const element = await page.$("#get_all_channel_json_response");
+        const text = await page.evaluate(element => element.textContent, element);
+
+        expect(JSON.parse(text)).toMatchObject({ success: true })
+        expect.arrayContaining([
+            expect.objectContaining({
+                _id: expect.any(String),
+                user_id: expect.any(String),
+                channel_name: expect.any(String),
+                avatar: expect.any(String),
+                Flux: [
+                    expect.objectContaining({
+                        first_source: {
+                            source_url: expect.any(String),
+                            name: expect.any(String),
+                            volume_source: expect.any(String)
+                        },
+                        second_source: {
+                            source_url: expect.any(String),
+                            name: expect.any(String),
+                            volume_source: expect.any(String)
+                        },
+                        _id: expect.any(String)
+                    })
+                ],
+                Stream: [
+                    expect.objectContaining({
+                        _id: expect.any(String),
+                        volume_1: expect.any(String),
+                        volume_2: expect.any(String),
+                        direct_url: expect.any(String),
+                    })
+                ],
+                radio: expect.any(Boolean),
+                status: expect.any(String),
+                live: expect.any(Boolean),
+                nbr_ecoute: expect.any(Number),
+                nbr_ecoute_global: (Number)
+            })
+        ])
+
+        await browser.close();
+    }, 9000000)
+
+    test("Get live channels", async () => {
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: true,
+            slowMo: 150
+        })
+        const page = await browser.newPage()
+
+        await login(page)
+
+        await page.click('form#get_all_channel_in_live_form input[type="submit"]')
+
+        await waitForResponse(page,"https://webradio-stream.herokuapp.com/auth/channels/stream/all");
+
+        const element = await page.$("#get_all_channel_in_live_json_response");
+        const text = await page.evaluate(element => element.textContent, element);
+
+        expect(JSON.parse(text)).toMatchObject({ success: true })
+        expect.arrayContaining([
+            expect.objectContaining({
+                _id: expect.any(String),
+                user_id: expect.any(String),
+                channel_name: expect.any(String),
+                avatar: expect.any(String),
+                Flux: [
+                    expect.objectContaining({
+                        first_source: {
+                            source_url: expect.any(String),
+                            name: expect.any(String),
+                            volume_source: expect.any(String)
+                        },
+                        second_source: {
+                            source_url: expect.any(String),
+                            name: expect.any(String),
+                            volume_source: expect.any(String)
+                        },
+                        _id: expect.any(String)
+                    })
+                ],
+                Stream: [
+                    expect.objectContaining({
+                        _id: expect.any(String),
+                        volume_1: expect.any(String),
+                        volume_2: expect.any(String),
+                        direct_url: expect.any(String),
+                    })
+                ],
+                radio: expect.any(Boolean),
+                status: expect.any(String),
+                live: expect.any(Boolean),
+                nbr_ecoute: expect.any(Number),
+                nbr_ecoute_global: (Number)
+            })
+        ])
+
+        await browser.close();
+    }, 9000000)
+
 })
 
