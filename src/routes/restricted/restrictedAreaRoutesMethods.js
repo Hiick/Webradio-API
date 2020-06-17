@@ -468,7 +468,6 @@ const getOneRadio = async (req, res) => {
         let radio = await getRadioByID(req.params.id);
 
         res.status(200).send({
-            success: true,
             radio
         });
     } catch (err) {
