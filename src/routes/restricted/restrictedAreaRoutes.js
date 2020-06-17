@@ -84,6 +84,13 @@ module.exports = (router, check, app, restrictedAreaRoutesMethods) => {
     router.get('/subscribe/check/:user_id', app.oauth.authorise(), restrictedAreaRoutesMethods.checkIfUserIsSubscribe);
     router.post('/subscribe/payment', validateRequest('subscribe payment'), app.oauth.authorise(), restrictedAreaRoutesMethods.doPayment);
 
+    /*
+    * ALL ROUTES FOR FAVORITES
+    */
+    router.post('/radio/favorite/:user_id', validateRequest('add into favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.addRadioInFavorite);
+    router.get('/radio/favorite/:user_id', validateRequest('add into favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.getFavoriteRadio);
+    router.delete('/radio/favorite/:user_id', validateRequest('add into favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.deleteFavoriteRadio);
+
     return router
 
 };

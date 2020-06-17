@@ -9,20 +9,20 @@ const mysql = require('mysql'),
 
 let idUser;
 
-const pool = mysql.createPool({
+/*const pool = mysql.createPool({
     host: process.env.HOST,
     port: process.env.MYSQL_PORT,
     user: process.env.USER,
     password: process.env.PASSWORD,
     database: process.env.DATABASE
-});
-/*const pool = mysql.createPool({
+});*/
+const pool = mysql.createPool({
     host: 'localhost',
     port: '8889',
     user: 'root',
     password: 'root',
     database: 'DBTest'
-});*/
+});
 
 
 module.exports = generateOAuth2Token = (id) => {
@@ -483,6 +483,52 @@ const addNewUser = async (data) => {
     });
 }
 
+const addIntoFavorite = (user_id, radio_id) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+        INSERT INTO favoris (id_user, id_radio)
+              VALUES ('${user_id}','${radio_id}')`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun utilisateur trouvé')
+            }
+            resolve('Radio ajoutée aux favoris !');
+        });
+    });
+};
+
+const getUserFavoriteRadios = (user_id) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+        SELECT favoris.id_radio FROM favoris WHERE id_user = ${user_id}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun utilisateur trouvé')
+            }
+            resolve(rows);
+        });
+    });
+};
+
+const deleteFavoriteRadioForUser = (user_id, radio_id) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+        DELETE FROM favoris WHERE favoris.id_user = ${user_id} AND favoris.id_radio = ${JSON.stringify(radio_id)}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun utilisateur trouvé')
+            }
+            resolve('Radio supprimée des favoris');
+        });
+    });
+};
+
 module.exports = {
     generateOAuth2Token,
     userBack,
@@ -504,5 +550,8 @@ module.exports = {
     userCanStream,
     unsubscribeUser,
     addNewUser,
-    confirmUserEmail
+    confirmUserEmail,
+    addIntoFavorite,
+    getUserFavoriteRadios,
+    deleteFavoriteRadioForUser
 };
