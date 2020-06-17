@@ -84,6 +84,12 @@ const validateRequest = (code) => {
         ]
     }
 
+    if (code === 'add into favorite') {
+        return [
+            check('user_id', "L'utilisateur doit être renseigné").notEmpty()
+        ]
+    }
+
 };
 
 module.exports = {

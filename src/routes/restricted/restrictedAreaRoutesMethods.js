@@ -33,7 +33,10 @@ const {
     unsubscribeUser,
     getUserByEmail,
     addNewUser,
-    addChannelIdToNewUser
+    addChannelIdToNewUser,
+    addIntoFavorite,
+    getUserFavoriteRadios,
+    deleteFavoriteRadioForUser
 } = require('../../controller/user');
 
 const {
@@ -1305,6 +1308,102 @@ const doPayment = async (req, res) => {
  * END STRIPE METHODES
  */
 
+/**
+ * FAVORITES METHODES
+ */
+const addRadioInFavorite = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        if (!req.query.radio_id) {
+
+            res.status(400).send({
+                success: false,
+                message: 'Aucun identifiant de radio n\'a été reçu dans votre requête'
+            });
+        } else {
+            let favorite = {
+                user_id: req.params.user_id,
+                radio_id: req.query.radio_id
+            }
+
+            try {
+                let addFavorite = await addIntoFavorite(favorite.user_id, favorite.radio_id);
+
+                res.status(200).send({
+                    success: true,
+                    addFavorite
+                });
+            } catch (err) {
+                res.status(400).send({
+                    success: false,
+                    message: err
+                });
+            }
+        }
+    }
+}
+
+const getFavoriteRadio = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        try {
+            let getFavorite = await getUserFavoriteRadios(req.params.user_id);
+
+            res.status(200).send({
+                success: true,
+                getFavorite
+            });
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                message: err
+            });
+        }
+    }
+}
+
+const deleteFavoriteRadio = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        try {
+            let deleteFavorite = await deleteFavoriteRadioForUser(req.params.user_id, req.query.radio_id);
+
+            res.status(200).send({
+                success: true,
+                deleteFavorite
+            });
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                message: err
+            });
+        }
+    }
+}
+/**
+ * END FAVORITES METHODES
+ */
 module.exports = {
     newSignalement: newSignalement,
     getSignalements: getSignalements,
@@ -1366,5 +1465,9 @@ module.exports = {
 
     getAllSubscriptions: getAllSubscriptions,
     checkIfUserIsSubscribe: checkIfUserIsSubscribe,
-    doPayment: doPayment
+    doPayment: doPayment,
+
+    addRadioInFavorite: addRadioInFavorite,
+    getFavoriteRadio: getFavoriteRadio,
+    deleteFavoriteRadio: deleteFavoriteRadio
 };
