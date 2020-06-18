@@ -1248,7 +1248,7 @@ const doPayment = async (req, res) => {
         }
 
         try {
-            const user = await getUserByEmail(req.body.email.toLowerCase());
+            const user = await getUserByEmail(JSON.stringify(req.body.email.toLowerCase()));
 
             let card = {
                 type: 'card',
