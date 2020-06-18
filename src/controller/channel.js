@@ -37,6 +37,8 @@ const removeOneListener = async (channel_id) => {
 };
 
 const updateChannelByID = async (channel_id, data) => {
+    console.log(channel_id)
+    console.log(data)
     return await Channel.updateOne({ _id: channel_id }, {
         $set: {
             channel_name: data.channel_name,
