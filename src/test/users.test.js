@@ -80,11 +80,11 @@ describe('User end-to-end and unit tests', () => {
     }
 
     test("Register new user", async () => {
-        const browser = await puppeteer.launch({
+        const browser = await puppeteer.launch(/*{
             headless: false,
             devtools: true,
             slowMo: 150
-        })
+        }*/)
         const page = await browser.newPage()
 
         await page.goto('https://api-tester.hiick.now.sh/')
@@ -109,11 +109,11 @@ describe('User end-to-end and unit tests', () => {
     }, 9000000);
 
     test("Login user", async () => {
-        const browser = await puppeteer.launch({
+        const browser = await puppeteer.launch(/*{
             headless: false,
             devtools: true,
             slowMo: 150
-        })
+        }*/)
         const page = await browser.newPage()
 
         await login(page);
@@ -194,11 +194,11 @@ describe('User end-to-end and unit tests', () => {
     }, 9000000)
 
     test("Get user channel", async () => {
-        const browser = await puppeteer.launch({
+        const browser = await puppeteer.launch(/*{
             headless: false,
             devtools: true,
             slowMo: 150
-        })
+        }*/)
         const page = await browser.newPage()
 
         await getUserChannel(page)
@@ -223,11 +223,11 @@ describe('User end-to-end and unit tests', () => {
     }, 9000000)
 
     test("Get all radios", async () => {
-        const browser = await puppeteer.launch({
+        const browser = await puppeteer.launch(/*{
             headless: false,
             devtools: true,
             slowMo: 150
-        })
+        }*/)
         const page = await browser.newPage()
 
         await page.goto('https://api-tester.hiick.now.sh/')
@@ -258,11 +258,11 @@ describe('User end-to-end and unit tests', () => {
     }, 9000000)
 
     test("Get all channels", async () => {
-        const browser = await puppeteer.launch({
+        const browser = await puppeteer.launch(/*{
             headless: false,
             devtools: true,
             slowMo: 150
-        })
+        }*/)
         const page = await browser.newPage()
 
         await login(page)
@@ -316,11 +316,11 @@ describe('User end-to-end and unit tests', () => {
     }, 9000000)
 
     test("Get live channels", async () => {
-        const browser = await puppeteer.launch({
+        const browser = await puppeteer.launch(/*{
             headless: false,
             devtools: true,
             slowMo: 150
-        })
+        }*/)
         const page = await browser.newPage()
 
         await login(page)
