@@ -19,10 +19,23 @@ connection = mySql.createConnection({
     database: 'DBTest'
 })*/
 
-connection.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected to MySQL !");
-});
+function handleDisconnect() {
+    connection.connect((err) => {
+        if (err) throw err;
+        console.log("Connected to MySQL !");
+    });                                   // process asynchronous requests in the meantime.
+                                            // If you're also serving http, display a 503 error.
+    connection.on('error', (err) => {
+        console.log('MySQL crash : ', err);
+        if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+            handleDisconnect();                         // lost due to either server restart, or a
+        } else {                                      // connnection idle timeout (the wait_timeout
+            throw err;                                  // server variable configures this)
+        }
+    });
+}
+
+handleDisconnect();
 
 function query(queryString, callback){
 
