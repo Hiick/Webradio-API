@@ -373,6 +373,8 @@ describe('User end-to-end and unit tests', () => {
         await browser.close();
     }, 9000000)
 
-    //5eba748487c9cb00170bf99e pour signalement
+    // 5eba748487c9cb00170bf99e pour signalement
+    // Ajouter une radio en favoris
+    // Payer
 })
 

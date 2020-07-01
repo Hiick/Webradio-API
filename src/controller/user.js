@@ -146,6 +146,28 @@ const updateOneUserPassword = (user) => {
     });
 };
 
+const updateOneUserWithFacebook = (user) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+        UPDATE users 
+        SET 
+        facebook_user_id = '${user.facebook_user_id}',
+        facebook_access_token = '${user.facebook_access_token}',
+        username = '${user.username}', 
+        avatar = '${user.avatar}',
+        confirmed = true
+        WHERE user_id = ${user.user_id}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun utilisateur trouvé')
+            }
+            resolve(rows);
+        });
+    });
+};
+
 const facebookUserLogin = async (token) => {
     return new Promise(async (resolve, reject) => {
         let getFacebookProfile = "https://graph.facebook.com/me?fields=birthday,email,hometown,name,picture.type(large)&access_token=" + token + "";
@@ -155,55 +177,75 @@ const facebookUserLogin = async (token) => {
                 await pool.query("SELECT * FROM users WHERE facebook_user_id=" + profile.data.id, async (err, rows) => {
                     if(err) throw err;
                     if (rows && rows.length === 0) {
-                        pool.query("" +
-                            "INSERT into users(facebook_user_id,facebook_access_token,email,username,avatar,status,subscribe) " +
-                            "VALUES('" + profile.data.id + "','" + token + "','" + profile.data.email + "','" + profile.data.name + "','" + profile.data.picture.data.url + "','ACTIVE', false)",
-                            async (err, rows) => {
-                                idUser = rows.insertId;
-                                if(err) throw err;
-                                let channel = {
-                                    user_id: rows.insertId,
-                                    channel_name: "",
-                                    avatar: profile.data.picture.data.url,
-                                    Flux: [{
-                                        stream_url: "",
-                                        first_source: {
-                                            source_url: "",
-                                            name: "",
-                                            volume_source: ""
-                                        },
-                                        second_source: {
-                                            source_url: "",
-                                            name: "",
-                                            volume_source: ""
-                                        }
-                                    }],
-                                    Stream: [{
-                                        _id: new mongoose.Types.ObjectId,
-                                        volume_1: "",
-                                        volume_2: "",
-                                        direct_url: "",
-                                        createdAt: new Date(),
-                                    }],
-                                    radio: false,
-                                    status: "ACTIVE",
-                                    live: false,
-                                    createdAt: new Date()
-                                };
+                        const userExistWithoutFacebook = await getUserByEmail(JSON.stringify(profile.data.email));
 
-                                const newChannel = Channel(channel);
-                                newChannel.save((e) => {
-                                    if (e) {
-                                        throw new Error('Error with Facebook register');
-                                    }
+                        if (userExistWithoutFacebook) {
+                            const updateUserCredentials = {
+                                facebook_user_id: profile.data.id,
+                                facebook_access_token: token,
+                                username: profile.data.name,
+                                avatar: profile.data.picture.data.url,
+                                user_id: userExistWithoutFacebook[0].user_id
+                            }
+
+                            await updateOneUserWithFacebook(updateUserCredentials);
+                            const oauth2_token = await generateOAuth2Token(rows.insertId);
+
+                            resolve({
+                                message: "L'utilisateur existait déjà et à donc été mis à jour",
+                                oauth2_token: oauth2_token
+                            })
+                        } else {
+                            pool.query(
+                                "INSERT into users(facebook_user_id,facebook_access_token,email,username,avatar,status,role,subscribe, confirmed) " +
+                                "VALUES('" + profile.data.id + "','" + token + "','" + profile.data.email + "','" + profile.data.name + "','" + profile.data.picture.data.url + "','ACTIVE', 'ROLE_USER', false, true)",
+                                async (err, rows) => {
+                                    idUser = rows.insertId;
+                                    if(err) throw err;
+                                    let channel = {
+                                        user_id: rows.insertId,
+                                        channel_name: "",
+                                        avatar: profile.data.picture.data.url,
+                                        Flux: [{
+                                            stream_url: "",
+                                            first_source: {
+                                                source_url: "",
+                                                name: "",
+                                                volume_source: ""
+                                            },
+                                            second_source: {
+                                                source_url: "",
+                                                name: "",
+                                                volume_source: ""
+                                            }
+                                        }],
+                                        Stream: [{
+                                            _id: new mongoose.Types.ObjectId,
+                                            volume_1: "",
+                                            volume_2: "",
+                                            direct_url: "",
+                                            createdAt: new Date(),
+                                        }],
+                                        radio: false,
+                                        status: "ACTIVE",
+                                        live: false,
+                                        createdAt: new Date()
+                                    };
+
+                                    const newChannel = Channel(channel);
+                                    newChannel.save((e) => {
+                                        if (e) {
+                                            throw new Error('Error with Facebook register');
+                                        }
+                                    });
+                                    const oauth2_token = await generateOAuth2Token(rows.insertId);
+                                    resolve({
+                                        message: "Registered",
+                                        facebook: profile.data,
+                                        oauth2_token: oauth2_token
+                                    })
                                 });
-                                const oauth2_token = await generateOAuth2Token(rows.insertId);
-                                resolve({
-                                    message: "Registered",
-                                    facebook: profile.data,
-                                    oauth2_token: oauth2_token
-                                })
-                            });
+                        }
                     } else {
                         const oauth2_token = await generateOAuth2Token(rows[0].user_id);
                         resolve({
@@ -486,7 +528,7 @@ const addNewUser = async (data) => {
 const addIntoFavorite = (user_id, radio_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        INSERT INTO favoris (id_user, id_radio)
+        INSERT INTO favoris_radios (id_user, id_radio)
               VALUES ('${user_id}','${radio_id}')`;
 
         pool.query(query, async (err, rows) => {
@@ -499,15 +541,46 @@ const addIntoFavorite = (user_id, radio_id) => {
     });
 };
 
-const getUserFavoriteRadios = (user_id) => {
+const addChannelIntoFavorite = (user_id, channel_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        SELECT favoris.id_radio FROM favoris WHERE id_user = ${user_id}`;
+        INSERT INTO favoris_channel (id_user, id_channel)
+              VALUES ('${user_id}','${channel_id}')`;
 
         pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
+            }
+            resolve('Chaîne ajoutée aux favoris !');
+        });
+    });
+};
+
+const getUserFavoriteRadios = (user_id) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+        SELECT favoris_radios.id_radio FROM favoris_radios WHERE id_user = ${user_id}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun favoris trouvé')
+            }
+            resolve(rows);
+        });
+    });
+};
+
+const getUserFavoriteChannels = (user_id) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+        SELECT favoris_channel.id_channel FROM favoris_channel WHERE id_user = ${user_id}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun favoris trouvé')
             }
             resolve(rows);
         });
@@ -517,14 +590,29 @@ const getUserFavoriteRadios = (user_id) => {
 const deleteFavoriteRadioForUser = (user_id, radio_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        DELETE FROM favoris WHERE favoris.id_user = ${user_id} AND favoris.id_radio = ${JSON.stringify(radio_id)}`;
+        DELETE FROM favoris_radios WHERE favoris_radios.id_user = ${user_id} AND favoris_radios.id_radio = ${JSON.stringify(radio_id)}`;
 
         pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
-                reject('Aucun utilisateur trouvé')
+                reject('Aucun favoris trouvé')
             }
             resolve('Radio supprimée des favoris');
+        });
+    });
+};
+
+const deleteFavoriteChannelForUser = (user_id, channel_id) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+        DELETE FROM favoris_channel WHERE favoris_channel.id_user = ${user_id} AND favoris_channel.id_channel = ${JSON.stringify(channel_id)}`;
+
+        pool.query(query, async (err, rows) => {
+            if (err) throw err;
+            if (rows && rows.length === 0 || !rows) {
+                reject('Aucun favoris trouvé')
+            }
+            resolve('Chaîne supprimée des favoris');
         });
     });
 };
@@ -553,5 +641,8 @@ module.exports = {
     confirmUserEmail,
     addIntoFavorite,
     getUserFavoriteRadios,
-    deleteFavoriteRadioForUser
+    deleteFavoriteRadioForUser,
+    addChannelIntoFavorite,
+    getUserFavoriteChannels,
+    deleteFavoriteChannelForUser
 };

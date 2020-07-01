@@ -5,6 +5,8 @@ const AudioRecorder = require('node-audiorecorder'),
     Radio = require('../models/radio'),
     Channel = require('../models/channel'),
     toWav = require('audiobuffer-to-wav'),
+    wav = require('node-wav'),
+    WavEncoder = require("wav-encoder"),
     path = require('path');
 
 const AudioContext = require('web-audio-api').AudioContext;
@@ -17,7 +19,7 @@ const recordVoice = async (channel, radio) => {
         const channel_exist = await Channel.findById({ _id: channel });
 
         if (radio_exist && channel_exist) {
-            await Channel.updateOne({_id: channel}, {
+            /*await Channel.updateOne({_id: channel}, {
                 $set: {
                     Flux: [{
                         first_source: {
@@ -32,7 +34,7 @@ const recordVoice = async (channel, radio) => {
                         }
                     }]
                 }
-            });
+            });*/
 
             const DIRECTORY = 'Stream';
             const audioRecorder = new AudioRecorder({
@@ -53,6 +55,7 @@ const recordVoice = async (channel, radio) => {
             let fileSize = 0;
             let finalSize = 0;
 
+
             setInterval(async () => {
                 fs.readFile(fileStream.path,  async (err, buffer) => {
                     if (err) {
@@ -70,27 +73,23 @@ const recordVoice = async (channel, radio) => {
 
                         let audio = createBuffer(test.slice(finalSize, test.length))
 
-                        setTimeout(async () => {
-                            await audioContext.decodeAudioData(new Buffer.from(audio), data => {
-                                let wav = toWav(data);
-                                let chunk = new Uint8Array(wav);
-                                console.log(chunk);
-                                fs.appendFile('Stream/cut_'+channel+'_'+buffer.length+'.mp3', new Buffer(chunk), (err) => {
-                                    if (err) {
-                                        console.log(err)
-                                    }
-                                });
+                        await audioContext.decodeAudioData(new Buffer(audio), data => {
+                            let wav = toWav(data);
+                            let chunk = new Uint8Array(wav);
 
-                            }, error => {
-                                console.log('Error : ' + error)
-                            });
-                        }, 1000)
+                            fs.appendFile('Stream/cut_'+channel+'_'+buffer.length+'.mp3', Buffer.from(chunk), (cb) => {
+                                console.log(cb)
+                            })
+
+                        }, error => {
+                            console.log('Error : ' + error)
+                        });
                     }
 
                     fileSize = buffer;
                     finalSize = buffer.length;
                 });
-            }, 2000)
+            }, 3000)
 
             return file;
 

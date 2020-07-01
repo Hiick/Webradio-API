@@ -84,7 +84,7 @@ const validateRequest = (code) => {
         ]
     }
 
-    if (code === 'add into favorite') {
+    if (code === 'favorite') {
         return [
             check('user_id', "L'utilisateur doit être renseigné").notEmpty()
         ]

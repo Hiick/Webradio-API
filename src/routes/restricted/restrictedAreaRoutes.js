@@ -49,13 +49,6 @@ module.exports = (router, check, app, restrictedAreaRoutesMethods) => {
     router.delete('/users/delete/:id', app.oauth.authorise(), restrictedAreaRoutesMethods.deleteUser);
 
     /**
-     * ALL ROUTES FOR STREAMS
-     */
-    router.get('/stream/record/:channel_id', restrictedAreaRoutesMethods.recordStream);
-    router.get('/stream/stop', restrictedAreaRoutesMethods.stopStream);
-    router.get('/stream/generate/:channel_id', restrictedAreaRoutesMethods.getFirstStream);
-
-    /**
      * ALL ROUTES FOR STATS
      */
     router.get('/stats/users', app.oauth.authorise(), restrictedAreaRoutesMethods.costUsers);
@@ -88,9 +81,20 @@ module.exports = (router, check, app, restrictedAreaRoutesMethods) => {
     /*
     * ALL ROUTES FOR FAVORITES
     */
-    router.post('/radio/favorite/:user_id', validateRequest('add into favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.addRadioInFavorite);
-    router.get('/radio/favorite/:user_id', validateRequest('add into favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.getFavoriteRadio);
-    router.delete('/radio/favorite/:user_id', validateRequest('add into favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.deleteFavoriteRadio);
+    router.post('/radio/favorite/:user_id', validateRequest('favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.addRadioInFavorite);
+    router.get('/radio/favorite/:user_id', validateRequest('favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.getFavoriteRadio);
+    router.delete('/radio/favorite/:user_id', validateRequest('favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.deleteFavoriteRadio);
+    router.post('/channel/favorite/:user_id', validateRequest('favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.addChannelInFavorite);
+    router.get('/channel/favorite/:user_id', validateRequest('favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.getFavoriteChannel);
+    router.delete('/channel/favorite/:user_id', validateRequest('favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.deleteFavoriteChannel);
+
+    /**
+     * ALL ROUTES FOR STREAMS
+     */
+    router.get('/stream/record/:channel_id', restrictedAreaRoutesMethods.recordStream);
+    router.get('/stream/stop', restrictedAreaRoutesMethods.stopStream);
+    router.get('/stream/generate/:channel_id', restrictedAreaRoutesMethods.getFirstStream);
+
 
     return router
 
