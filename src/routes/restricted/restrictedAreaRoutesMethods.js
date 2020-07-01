@@ -36,7 +36,10 @@ const {
     addChannelIdToNewUser,
     addIntoFavorite,
     getUserFavoriteRadios,
-    deleteFavoriteRadioForUser
+    deleteFavoriteRadioForUser,
+    addChannelIntoFavorite,
+    getUserFavoriteChannels,
+    deleteFavoriteChannelForUser
 } = require('../../controller/user');
 
 const {
@@ -1400,6 +1403,97 @@ const deleteFavoriteRadio = async (req, res) => {
         }
     }
 }
+
+const addChannelInFavorite = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        if (!req.query.channel_id) {
+
+            res.status(400).send({
+                success: false,
+                message: 'Aucun identifiant de chaîne n\'a été reçu dans votre requête'
+            });
+        } else {
+            let favorite = {
+                user_id: req.params.user_id,
+                channel_id: req.query.channel_id
+            }
+
+            try {
+                let addFavorite = await addChannelIntoFavorite(favorite.user_id, favorite.channel_id);
+
+                res.status(200).send({
+                    success: true,
+                    addFavorite
+                });
+            } catch (err) {
+                res.status(400).send({
+                    success: false,
+                    message: err
+                });
+            }
+        }
+    }
+}
+
+const getFavoriteChannel = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        try {
+            let getFavorite = await getUserFavoriteChannels(req.params.user_id);
+
+            res.status(200).send({
+                success: true,
+                getFavorite
+            });
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                message: err
+            });
+        }
+    }
+}
+
+const deleteFavoriteChannel = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).send({
+            success: false,
+            message: 'Erreur de validation',
+            error: errors.array()
+        });
+    } else {
+        try {
+            let deleteFavorite = await deleteFavoriteChannelForUser(req.params.user_id, req.query.channel_id);
+
+            res.status(200).send({
+                success: true,
+                deleteFavorite
+            });
+        } catch (err) {
+            res.status(400).send({
+                success: false,
+                message: err
+            });
+        }
+    }
+}
 /**
  * END FAVORITES METHODES
  */
@@ -1468,5 +1562,8 @@ module.exports = {
 
     addRadioInFavorite: addRadioInFavorite,
     getFavoriteRadio: getFavoriteRadio,
-    deleteFavoriteRadio: deleteFavoriteRadio
+    deleteFavoriteRadio: deleteFavoriteRadio,
+    addChannelInFavorite: addChannelInFavorite,
+    getFavoriteChannel: getFavoriteChannel,
+    deleteFavoriteChannel: deleteFavoriteChannel
 };
