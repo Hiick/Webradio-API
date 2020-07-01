@@ -3,7 +3,7 @@ const mySql = require('mysql');
 
 let connection = null;
 
-connection = mySql.createConnection({
+connection = mySql.createPool({
     host: process.env.HOST,
     port: process.env.MYSQL_PORT,
     user: process.env.USER,
@@ -18,30 +18,6 @@ connection = mySql.createConnection({
     password: 'root',
     database: 'DBTest'
 })*/
-
-function handleDisconnect() {
-    connection.connect((err) => {
-        if (err) throw err;
-        console.log("Connected to MySQL !");
-    });                                   // process asynchronous requests in the meantime.
-                                            // If you're also serving http, display a 503 error.
-    connection.on('error', (err) => {
-        console.log('MySQL crash : ', err.code);
-        if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
-            connection.connect((err) => {
-                if (err) throw err;
-                console.log("Connected to MySQL !");
-            });                        // lost due to either server restart, or a
-        } else {                                      // connnection idle timeout (the wait_timeout
-            connection.connect((err) => {
-                if (err) throw err;
-                console.log("Connected to MySQL !");
-            });                                  // server variable configures this)
-        }
-    });
-}
-
-handleDisconnect();
 
 function query(queryString, callback){
 
