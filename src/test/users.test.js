@@ -375,6 +375,9 @@ describe('User end-to-end and unit tests', () => {
 
     // 5eba748487c9cb00170bf99e pour signalement
     // Ajouter une radio en favoris
+    // Ajouter une chaîne en favoris
+    // Supprimer une radio en favoris
+    // Supprimer une chaîne en favoris
     // Payer
 })
 
