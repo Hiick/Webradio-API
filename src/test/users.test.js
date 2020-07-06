@@ -150,7 +150,11 @@ describe('User end-to-end and unit tests', () => {
     }, 9000000);
 
     test("Get connected user", async () => {
-        const browser = await puppeteer.launch()
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: true,
+            slowMo: 150
+        })
         const page = await browser.newPage()
 
         await login(page)
@@ -172,7 +176,11 @@ describe('User end-to-end and unit tests', () => {
     }, 9000000)
 
     test("Update password", async () => {
-        const browser = await puppeteer.launch()
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: true,
+            slowMo: 150
+        })
         const page = await browser.newPage()
 
         await login(page)
