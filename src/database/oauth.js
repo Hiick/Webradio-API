@@ -17,7 +17,7 @@ module.exports = injectedMySqlConnection => {
 };
 
 function register(data, registrationCallback){
-    let base_avatar = "https://firebasestorage.googleapis.com/v0/b/webradio-stream.appspot.com/o/base_url.png?alt=media&token=a996c02e-ae13-40aa-b224-c2f4d703c606";
+    let base_avatar = "https://firebasestorage.googleapis.com/v0/b/webradio-stream.appspot.com/o/Default%2Fimage_1.png?alt=media&token=00f9f475-a4e5-4998-b715-2631dfcccaad";
     bcrypt.hash(data.password, 10, (err, hash) => {
         const registerUserQuery = `
               INSERT INTO users (email, username, password, status, avatar, role, subscribe, confirmed)
