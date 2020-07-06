@@ -15,15 +15,8 @@ const express= require('express'),
     app = express(),
     port = process.env.PORT || 3000;
 
-const whitelist = ['*'];
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (whitelist.indexOf(origin) !== -1 || !origin) {
-            callback(null, true)
-        } else {
-            callback(new Error('Not allowed by CORS'))
-        }
-    }
+    origin: '*'
 }
 
 /**
