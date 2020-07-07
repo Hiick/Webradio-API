@@ -3,21 +3,21 @@ const mySql = require('mysql');
 
 let connection = null;
 
-/*connection = mySql.createPool({
+connection = mySql.createPool({
     host: process.env.HOST,
     port: process.env.MYSQL_PORT,
     user: process.env.USER,
     password: process.env.PASSWORD,
     database: process.env.DATABASE
-})*/
+})
 
-connection = mySql.createPool({
+/*connection = mySql.createConnection({
     host: 'localhost',
     port: '8889',
     user: 'root',
     password: 'root',
     database: 'DBTest'
-})
+})*/
 function query(queryString, callback){
 
     connection.query(queryString, function(error, results, fields){

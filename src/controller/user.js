@@ -9,20 +9,20 @@ const mysql = require('mysql'),
 
 let idUser;
 
-/*const pool = mysql.createPool({
+const pool = mysql.createPool({
     host: process.env.HOST,
     port: process.env.MYSQL_PORT,
     user: process.env.USER,
     password: process.env.PASSWORD,
     database: process.env.DATABASE
-});*/
-const pool = mysql.createPool({
+});
+/*const pool = mysql.createPool({
     host: 'localhost',
     port: '8889',
     user: 'root',
     password: 'root',
     database: 'DBTest'
-});
+});*/
 
 
 module.exports = generateOAuth2Token = (id) => {
