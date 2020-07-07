@@ -148,13 +148,19 @@ const updateOneUserPassword = (user) => {
 
 const updateOneUserWithFacebook = (user) => {
     return new Promise((resolve, reject) => {
+        console.log(user);
+
         const query = `
         UPDATE users 
         SET 
         facebook_user_id = '${user.facebook_user_id}',
         facebook_access_token = '${user.facebook_access_token}',
+        email = '${user.email}',
         username = '${user.username}', 
         avatar = '${user.avatar}',
+        status = 'ACTIVE',
+        role = 'ROLE_USER',
+        subscribe = false,
         confirmed = true
         WHERE user_id = ${user.user_id}`;
 
@@ -177,14 +183,13 @@ const facebookUserLogin = async (token) => {
                 await pool.query("SELECT * FROM users WHERE facebook_user_id=" + profile.data.id, async (err, rows) => {
                     if(err) throw err;
                     if (rows && rows.length === 0) {
-                        console.log('Je suis ici')
                         const userExistWithoutFacebook = await getUserByEmail(JSON.stringify(profile.data.email));
 
                         if (userExistWithoutFacebook) {
-                            console.log('Jexiste')
                             const updateUserCredentials = {
                                 facebook_user_id: profile.data.id,
                                 facebook_access_token: token,
+                                email: profile.data.email,
                                 username: profile.data.name,
                                 avatar: profile.data.picture.data.url,
                                 user_id: userExistWithoutFacebook[0].user_id
