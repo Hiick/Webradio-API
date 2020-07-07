@@ -170,21 +170,18 @@ const updateOneUserWithFacebook = (user) => {
 
 const facebookUserLogin = async (token) => {
     return new Promise(async (resolve, reject) => {
-        console.log('Je suis ici')
-        console.log(token);
         let getFacebookProfile = "https://graph.facebook.com/me?fields=birthday,email,hometown,name,picture.type(large)&access_token=" + token + "";
 
-        console.log(getFacebookProfile)
         await axios.get(getFacebookProfile).then(async (profile) => {
-            console.log('Pas de pb')
-            console.log(profile)
             if(process.env.USE_DATABASE){
                 await pool.query("SELECT * FROM users WHERE facebook_user_id=" + profile.data.id, async (err, rows) => {
                     if(err) throw err;
                     if (rows && rows.length === 0) {
+                        console.log('Je suis ici')
                         const userExistWithoutFacebook = await getUserByEmail(JSON.stringify(profile.data.email));
 
                         if (userExistWithoutFacebook) {
+                            console.log('Jexiste')
                             const updateUserCredentials = {
                                 facebook_user_id: profile.data.id,
                                 facebook_access_token: token,
@@ -201,6 +198,7 @@ const facebookUserLogin = async (token) => {
                                 oauth2_token: oauth2_token
                             })
                         } else {
+                            console.log('jexiste pas')
                             pool.query(
                                 "INSERT into users(facebook_user_id,facebook_access_token,email,username,avatar,status,role,subscribe, confirmed) " +
                                 "VALUES('" + profile.data.id + "','" + token + "','" + profile.data.email + "','" + profile.data.name + "','" + profile.data.picture.data.url + "','ACTIVE', 'ROLE_USER', false, true)",
