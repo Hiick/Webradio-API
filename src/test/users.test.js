@@ -150,7 +150,11 @@ describe('User end-to-end and unit tests', () => {
     }, 9000000);
 
     test("Get connected user", async () => {
-        const browser = await puppeteer.launch()
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: true,
+            slowMo: 50
+        })
         const page = await browser.newPage()
 
         await login(page)
@@ -160,7 +164,8 @@ describe('User end-to-end and unit tests', () => {
         const text = await page.evaluate(element => element.textContent, element);
 
         expect(JSON.parse(text)).toMatchObject({ success: true })
-        expect(JSON.parse(text)).toMatchObject({ user: [{
+        expect(JSON.parse(text)).toMatchObject({
+            user: [{
                 email: data.email,
                 username: data.username,
                 status: expect.any(String),
@@ -379,5 +384,6 @@ describe('User end-to-end and unit tests', () => {
     // Supprimer une radio en favoris
     // Supprimer une chaîne en favoris
     // Payer
+
 })
 
