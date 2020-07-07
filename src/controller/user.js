@@ -170,9 +170,14 @@ const updateOneUserWithFacebook = (user) => {
 
 const facebookUserLogin = async (token) => {
     return new Promise(async (resolve, reject) => {
+        console.log('Je suis ici')
+        console.log(token);
         let getFacebookProfile = "https://graph.facebook.com/me?fields=birthday,email,hometown,name,picture.type(large)&access_token=" + token + "";
 
+        console.log(getFacebookProfile)
         await axios.get(getFacebookProfile).then(async (profile) => {
+            console.log('Pas de pb')
+            console.log(profile)
             if(process.env.USE_DATABASE){
                 await pool.query("SELECT * FROM users WHERE facebook_user_id=" + profile.data.id, async (err, rows) => {
                     if(err) throw err;
