@@ -48,7 +48,7 @@
     "node-wav": "0.0.2",
     "nodemailer": "^6.4.6",
     "nodemon": "^2.0.2",
-    "npm": "^6.14.4",
+    "npm": "^6.14.6",
     "oauth2-server": "^3.0.1",
     "passport": "^0.4.1",
     "passport-facebook": "^3.0.0",
