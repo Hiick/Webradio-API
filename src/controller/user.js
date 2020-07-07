@@ -196,14 +196,13 @@ const facebookUserLogin = async (token) => {
                             }
 
                             await updateOneUserWithFacebook(updateUserCredentials);
-                            const oauth2_token = await generateOAuth2Token(rows.insertId);
+                            const oauth2_token = await generateOAuth2Token(userExistWithoutFacebook[0].user_id);
 
                             resolve({
                                 message: "L'utilisateur existait déjà et à donc été mis à jour",
                                 oauth2_token: oauth2_token
                             })
                         } else {
-                            console.log('jexiste pas')
                             pool.query(
                                 "INSERT into users(facebook_user_id,facebook_access_token,email,username,avatar,status,role,subscribe, confirmed) " +
                                 "VALUES('" + profile.data.id + "','" + token + "','" + profile.data.email + "','" + profile.data.name + "','" + profile.data.picture.data.url + "','ACTIVE', 'ROLE_USER', false, true)",
