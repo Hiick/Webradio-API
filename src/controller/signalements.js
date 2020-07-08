@@ -32,11 +32,17 @@ const registerSignalement = (data) => {
             if (rows && rows.length === 0) {
                 reject('Aucune chaîne n\'existe à cet ID. Veuillez vérifier');
             } else {
+                console.log(data.channel_id)
+                console.log(data.user_id)
+                console.log(data.channel)
+                console.log(data.url_stream)
+                console.log(data.motif)
+                console.log(formatDate(data.date_stream))
                 const query = `
                 INSERT INTO signalements
-                (user_id,channel_name,url_stream,motif,channel_id,date_stream)
+                (channel_id, user_id,channel_name,url_stream,motif,date_stream)
                 VALUES
-                ('${data.user_id}','${data.channel}','${data.url_stream}','${data.motif}','${data.channel_id}','${formatDate(data.date_stream)}')`;
+                ('${data.channel_id}','${data.user_id}','${data.channel}','${data.url_stream}','${data.motif}','${formatDate(data.date_stream)}')`;
 
                 pool.query(query, async (err, rows) => {
                     if(err) throw err;

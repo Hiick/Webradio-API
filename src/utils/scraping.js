@@ -51,10 +51,13 @@ const fetchData = async (url) => {
         }).catch(() => {
             axios.delete('https://webradio-stream.herokuapp.com/authorized/radios/delete/' + radios[i]._id, {
                 headers: {
-                    Authorization: 'Bearer b37087add5643385ffc7be83ea24fc27c91e5344'
+                    Authorization: 'Bearer 7a966f14df352138f349636a3a9714d64842ec3c'
                 }
             }).then(() => {
                 console.log('Radio supprimée : ' + radios[i]._id)
+            }).catch((err) => {
+                console.log(radios[i]._id);
+                console.log(err);
             })
         });
     }
