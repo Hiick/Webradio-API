@@ -6,9 +6,6 @@ const mysql = require('mysql'),
     mongoose = require('mongoose'),
     axios = require('axios');
 
-const { addChannelIdToNewUser  } = require('../controller/channel');
-
-
 let idUser;
 
 const pool = mysql.createPool({
