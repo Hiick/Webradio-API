@@ -1,12 +1,10 @@
 const puppeteer = require('puppeteer')
 
-/*
-{
-            //headless: false,
-            //devtools: true,
-            //slowMo: 150
-        }
- */
+/*{
+    headless: false,
+    devtools: true,
+    slowMo: 50
+}*/
 
 describe('User end-to-end and unit tests', () => {
 
@@ -21,17 +19,15 @@ describe('User end-to-end and unit tests', () => {
     const waitForResponse = (page, url) => {
         return new Promise(resolve => {
             page.on("response", function callback(response){
-                if (response.url() === url) {
-                    resolve(response);
-                    page.removeListener("response",callback)
-                }
+                setTimeout(() => {
+                    if (response.url() === url) {
+                        resolve(response);
+                        page.removeListener("response",callback)
+                    }
+                }, 2000)
             })
         })
     };
-
-    async function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
 
     const login = async (page) => {
         await page.goto('https://api-tester.hiick.now.sh/')
@@ -58,11 +54,7 @@ describe('User end-to-end and unit tests', () => {
     }
 
     test("Register new user", async () => {
-        const browser = await puppeteer.launch(/*{
-            headless: false,
-            devtools: true,
-            slowMo: 150
-        }*/)
+        const browser = await puppeteer.launch()
         const page = await browser.newPage()
 
         await page.goto('https://api-tester.hiick.now.sh/')
@@ -127,33 +119,6 @@ describe('User end-to-end and unit tests', () => {
         await browser.close();
     }, 9000000);
 
-    test("Get connected user", async () => {
-        const browser = await puppeteer.launch({
-            headless: false,
-            devtools: true,
-            slowMo: 50
-        })
-        const page = await browser.newPage()
-
-        await login(page)
-        await getLogged(page)
-
-        const element = await page.$("#get_user_connected_json_response");
-        const text = await page.evaluate(element => element.textContent, element);
-
-        expect(JSON.parse(text)).toMatchObject({ success: true })
-        expect(JSON.parse(text)).toMatchObject({
-            user: [{
-                email: data.email,
-                username: data.username,
-                status: expect.any(String),
-                role: expect.any(String)
-            }]
-        })
-
-        await browser.close();
-    }, 9000000)
-
     test("Update password", async () => {
         const browser = await puppeteer.launch()
         const page = await browser.newPage()
@@ -161,7 +126,7 @@ describe('User end-to-end and unit tests', () => {
         await login(page)
         await getLogged(page)
 
-        await page.click("input[name=get_user_connected_password]");
+        await page.click("input[name='get_user_connected_password']");
         await page.type('input[name="get_user_connected_password"]', data.password)
 
         await page.click('form#update_user_password_connected_form input[type="submit"]')
@@ -176,41 +141,8 @@ describe('User end-to-end and unit tests', () => {
         await browser.close();
     }, 9000000)
 
-    /*test("Get user channel", async () => {
-        const browser = await puppeteer.launch(/!*{
-            headless: false,
-            devtools: true,
-            slowMo: 150
-        }*!/)
-        const page = await browser.newPage()
-
-        await getUserChannel(page)
-
-        await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/channels/"+channel_id);
-
-        const element = await page.$("#get_user_channel_json_response");
-        const text = await page.evaluate(element => element.textContent, element);
-
-        expect(JSON.parse(text)).toMatchObject({
-            success: true,
-            channel: {
-                _id: expect.any(String),
-                user_id: JSON.stringify(user_id),
-                radio: expect.any(Boolean),
-                status: expect.any(String),
-                live: expect.any(Boolean)
-            }
-        })
-
-        await browser.close();
-    }, 9000000)
-
     test("Get all radios", async () => {
-        const browser = await puppeteer.launch(/!*{
-            headless: false,
-            devtools: true,
-            slowMo: 150
-        }*!/)
+        const browser = await puppeteer.launch()
         const page = await browser.newPage()
 
         await page.goto('https://api-tester.hiick.now.sh/')
@@ -223,94 +155,31 @@ describe('User end-to-end and unit tests', () => {
         const text = await page.evaluate(element => element.textContent, element);
 
         expect(JSON.parse(text)).toMatchObject({ success: true })
-        expect.arrayContaining([
-            expect.objectContaining({
-                Stream: {
-                    _id: expect.any(String),
-                    direct_url: expect.any(String),
-                },
+        expect.objectContaining({
+            Stream: {
                 _id: expect.any(String),
-                radio_name: expect.any(String),
-                logo: expect.any(String),
-                radio: expect.any(Boolean),
-                status: expect.any(String),
-            })
-        ])
-
-        await browser.close();
-    }, 9000000)
-
-    test("Get all channels", async () => {
-        const browser = await puppeteer.launch(/!*{
-            headless: false,
-            devtools: true,
-            slowMo: 150
-        }*!/)
-        const page = await browser.newPage()
-
-        await login(page)
-
-        await page.click('form#get_all_channel_form input[type="submit"]')
-
-        await waitForResponse(page,"https://webradio-stream.herokuapp.com/auth/channels/all");
-
-        const element = await page.$("#get_all_channel_json_response");
-        const text = await page.evaluate(element => element.textContent, element);
-
-        expect(JSON.parse(text)).toMatchObject({ success: true })
-        expect.arrayContaining([
-            expect.objectContaining({
-                _id: expect.any(String),
-                user_id: expect.any(String),
-                channel_name: expect.any(String),
-                avatar: expect.any(String),
-                Flux: [
-                    expect.objectContaining({
-                        first_source: {
-                            source_url: expect.any(String),
-                            name: expect.any(String),
-                            volume_source: expect.any(String)
-                        },
-                        second_source: {
-                            source_url: expect.any(String),
-                            name: expect.any(String),
-                            volume_source: expect.any(String)
-                        },
-                        _id: expect.any(String)
-                    })
-                ],
-                Stream: [
-                    expect.objectContaining({
-                        _id: expect.any(String),
-                        volume_1: expect.any(String),
-                        volume_2: expect.any(String),
-                        direct_url: expect.any(String),
-                    })
-                ],
-                radio: expect.any(Boolean),
-                status: expect.any(String),
-                live: expect.any(Boolean),
-                nbr_ecoute: expect.any(Number),
-                nbr_ecoute_global: (Number)
-            })
-        ])
+                direct_url: expect.any(String),
+            },
+            _id: expect.any(String),
+            radio_name: expect.any(String),
+            logo: expect.any(String),
+            radio: expect.any(Boolean),
+            status: expect.any(String),
+        })
 
         await browser.close();
     }, 9000000)
 
     test("Get live channels", async () => {
-        const browser = await puppeteer.launch(/!*{
-            headless: false,
-            devtools: true,
-            slowMo: 150
-        }*!/)
+        const browser = await puppeteer.launch()
         const page = await browser.newPage()
 
         await login(page)
+        await getLogged(page)
 
         await page.click('form#get_all_channel_in_live_form input[type="submit"]')
 
-        await waitForResponse(page,"https://webradio-stream.herokuapp.com/auth/channels/stream/all");
+        await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/channels/stream/all");
 
         const element = await page.$("#get_all_channel_in_live_json_response");
         const text = await page.evaluate(element => element.textContent, element);
@@ -354,69 +223,16 @@ describe('User end-to-end and unit tests', () => {
         ])
 
         await browser.close();
-    }, 9000000)*/
-
-    // 5eba748487c9cb00170bf99e pour signalement
-    // Ajouter une radio en favoris
-    // Ajouter une chaîne en favoris
-    // Supprimer une radio en favoris
-    // Supprimer une chaîne en favoris
-    // Payer
-
-    test("Payment", async () => {
-        const browser = await puppeteer.launch({
-            headless: false,
-            devtools: true,
-            slowMo: 50
-        })
-        const page = await browser.newPage()
-        /* connection
-        */
-        await login(page)
-        /* récupère les infos
-        */
-        await getLogged(page)
-        /* clic sur "ça m'intéresse"
-        */
-        await page.click('input[id="before_sub"]');
-        /*
-        */
-        await page.click('input[id="email_pay"]');
-        await page.type('input[id="email_pay"]', "alex.mignon77@gmail.com");
-        await page.click('input[id="number_pay"]');
-        await page.type('input[id="number_pay"]', "4242 4242 4242 4242");
-        await page.click('input[id="month_pay"]');
-        await page.type('input[id="month_pay"]', "12");
-        await page.click('input[id="year_pay"]');
-        await page.type('input[id="year_pay"]', "21");
-        await page.click('input[id="ccv_pay"]');
-        await page.type('input[id="ccv_pay"]', "424");
-        await page.click('input[id="sub"]');
-        await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/subscribe/payment");
-        const element = await page.$("#sub_to_stream_json_response");
-        const text = await page.evaluate(element => element.textContent, element);
-        expect(JSON.parse(text)).toMatchObject({ success: true , message:  JSON.parse(text).message , emailSent: true})
-        await browser.close();
     }, 9000000)
 
     test("Payment false", async () => {
-        const browser = await puppeteer.launch({
-            headless: false,
-            devtools: true,
-            slowMo: 50
-        })
+        const browser = await puppeteer.launch()
         const page = await browser.newPage()
-        /* connection
-        */
+
         await login(page)
-        /* récupère les infos
-        */
         await getLogged(page)
-        /* clic sur "ça m'intéresse"
-        */
+
         await page.click('input[id="before_sub"]');
-        /*
-        */
         await page.click('input[id="email_pay"]');
         await page.type('input[id="email_pay"]', "false.data@gmail.com");
         await page.click('input[id="number_pay"]');
@@ -435,12 +251,38 @@ describe('User end-to-end and unit tests', () => {
         await browser.close();
     }, 9000000)
 
-    test("Add favorite radio", async () => {
+    test("Payment", async () => {
         const browser = await puppeteer.launch({
             headless: false,
             devtools: true,
             slowMo: 50
         })
+        const page = await browser.newPage()
+
+        await login(page)
+        await getLogged(page)
+
+        await page.click('input[id="before_sub"]');
+        await page.click('input[id="email_pay"]');
+        await page.type('input[id="email_pay"]', "alex.mignon77@gmail.com");
+        await page.click('input[id="number_pay"]');
+        await page.type('input[id="number_pay"]', "4242424242424242");
+        await page.click('input[id="month_pay"]');
+        await page.type('input[id="month_pay"]', "12");
+        await page.click('input[id="year_pay"]');
+        await page.type('input[id="year_pay"]', "21");
+        await page.click('input[id="ccv_pay"]');
+        await page.type('input[id="ccv_pay"]', "424");
+        await page.click('input[id="sub"]');
+        await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/subscribe/payment");
+        const element = await page.$("#sub_to_stream_json_response");
+        const text = await page.evaluate(element => element.textContent, element);
+        expect(JSON.parse(text)).toMatchObject({ success: true , message:  JSON.parse(text).message , emailSent: true})
+        await browser.close();
+    }, 9000000)
+
+    /*test("Add favorite radio", async () => {
+        const browser = await puppeteer.launch()
 
         const page = await browser.newPage()
 
@@ -454,7 +296,7 @@ describe('User end-to-end and unit tests', () => {
         await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/radio/favorite/102?radio_id=5e957b459f9068a9510886c7");
 
         await browser.close();
-    }, 9000000)
+    }, 9000000)*/
 
 })
 

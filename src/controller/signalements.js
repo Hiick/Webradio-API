@@ -32,12 +32,6 @@ const registerSignalement = (data) => {
             if (rows && rows.length === 0) {
                 reject('Aucune chaîne n\'existe à cet ID. Veuillez vérifier');
             } else {
-                console.log(data.channel_id)
-                console.log(data.user_id)
-                console.log(data.channel)
-                console.log(data.url_stream)
-                console.log(data.motif)
-                console.log(formatDate(data.date_stream))
                 const query = `
                 INSERT INTO signalements
                 (channel_id, user_id,channel_name,url_stream,motif,date_stream)
