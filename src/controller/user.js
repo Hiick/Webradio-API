@@ -183,26 +183,28 @@ const facebookUserLogin = async (token) => {
                 await pool.query("SELECT * FROM users WHERE facebook_user_id=" + profile.data.id, async (err, rows) => {
                     if(err) throw err;
                     if (rows && rows.length === 0) {
-                        const userExistWithoutFacebook = await getUserByEmail(JSON.stringify(profile.data.email));
+                        try {
+                            const userExistWithoutFacebook = await getUserByEmail(JSON.stringify(profile.data.email));
 
-                        if (userExistWithoutFacebook) {
-                            const updateUserCredentials = {
-                                facebook_user_id: profile.data.id,
-                                facebook_access_token: token,
-                                email: profile.data.email,
-                                username: profile.data.name,
-                                avatar: profile.data.picture.data.url,
-                                user_id: userExistWithoutFacebook[0].user_id
+                            if (userExistWithoutFacebook) {
+                                const updateUserCredentials = {
+                                    facebook_user_id: profile.data.id,
+                                    facebook_access_token: token,
+                                    email: profile.data.email,
+                                    username: profile.data.name,
+                                    avatar: profile.data.picture.data.url,
+                                    user_id: userExistWithoutFacebook[0].user_id
+                                }
+
+                                await updateOneUserWithFacebook(updateUserCredentials);
+                                const oauth2_token = await generateOAuth2Token(userExistWithoutFacebook[0].user_id);
+
+                                resolve({
+                                    message: "L'utilisateur existait déjà et à donc été mis à jour",
+                                    oauth2_token: oauth2_token
+                                })
                             }
-
-                            await updateOneUserWithFacebook(updateUserCredentials);
-                            const oauth2_token = await generateOAuth2Token(userExistWithoutFacebook[0].user_id);
-
-                            resolve({
-                                message: "L'utilisateur existait déjà et à donc été mis à jour",
-                                oauth2_token: oauth2_token
-                            })
-                        } else {
+                        } catch (e) {
                             pool.query(
                                 "INSERT into users(facebook_user_id,facebook_access_token,email,username,avatar,status,role,subscribe, confirmed) " +
                                 "VALUES('" + profile.data.id + "','" + token + "','" + profile.data.email + "','" + profile.data.name + "','" + profile.data.picture.data.url + "','ACTIVE', 'ROLE_USER', false, true)",
