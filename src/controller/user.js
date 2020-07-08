@@ -6,7 +6,6 @@ const mysql = require('mysql'),
     mongoose = require('mongoose'),
     axios = require('axios');
 
-
 let idUser;
 
 const pool = mysql.createPool({
@@ -242,12 +241,19 @@ const facebookUserLogin = async (token) => {
                                     };
 
                                     const newChannel = Channel(channel);
-                                    newChannel.save((e) => {
+                                    newChannel.save(async (e, result) => {
+                                        try {
+                                            await addChannelIdToNewUser(rows.insertId, result._id)
+                                        } catch (e) {
+                                            console.log(e);
+                                        }
+
                                         if (e) {
                                             throw new Error('Error with Facebook register');
                                         }
                                     });
                                     const oauth2_token = await generateOAuth2Token(rows.insertId);
+
                                     resolve({
                                         message: "Registered",
                                         facebook: profile.data,
