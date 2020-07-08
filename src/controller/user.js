@@ -531,7 +531,7 @@ const addNewUser = async (data) => {
         bcrypt.hash(password, 10, (err, hash) => {
             const query = `
               INSERT INTO users (email, username, password, status, avatar, role, subscribe, confirmed)
-              VALUES ('${JSON.stringify(data.email)}','${JSON.stringify(data.username)}',
+              VALUES ('${data.email}','${data.username}',
               '${hash}', 'ACTIVE', '${base_avatar}', 'ROLE_USER',false, false)`;
 
             pool.query(query, async (err, rows) => {

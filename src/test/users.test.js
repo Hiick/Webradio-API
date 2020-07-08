@@ -29,6 +29,10 @@ describe('User end-to-end and unit tests', () => {
         })
     };
 
+    async function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     const login = async (page) => {
         await page.goto('https://api-tester.hiick.now.sh/')
 
@@ -42,8 +46,6 @@ describe('User end-to-end and unit tests', () => {
     }
 
     const getLogged = async (page) => {
-        await page.goto('https://api-tester.hiick.now.sh/')
-
         await page.click('form#get_user_connected_form input[type="submit"]')
 
         await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/users/logged");
@@ -53,30 +55,6 @@ describe('User end-to-end and unit tests', () => {
 
         user_id = text.user[0].user_id
         channel_id = text.user[0].channel_id
-    }
-
-    const getUserChannel = async (page) => {
-        await page.goto('https://api-tester.hiick.now.sh/')
-
-        await page.type('input[name="login-email"]', data.email)
-        await page.click("input[name=login-password]");
-        await page.type('input[name="login-password"]', data.password)
-
-        await page.click('form#login_form input[type="submit"]')
-
-        await waitForResponse(page,"https://webradio-stream.herokuapp.com/auth/login");
-
-        await page.click('form#get_user_connected_form input[type="submit"]')
-
-        await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/users/logged");
-
-        const element = await page.$("#get_user_connected_json_response");
-        const text = await page.evaluate(element => JSON.parse(element.textContent), element);
-
-        user_id = text.user[0].user_id
-        channel_id = text.user[0].channel_id
-
-        await page.click('form#get_user_channel_form input[type="submit"]')
     }
 
     test("Register new user", async () => {
@@ -384,6 +362,99 @@ describe('User end-to-end and unit tests', () => {
     // Supprimer une radio en favoris
     // Supprimer une chaîne en favoris
     // Payer
+
+    test("Payment", async () => {
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: true,
+            slowMo: 50
+        })
+        const page = await browser.newPage()
+        /* connection
+        */
+        await login(page)
+        /* récupère les infos
+        */
+        await getLogged(page)
+        /* clic sur "ça m'intéresse"
+        */
+        await page.click('input[id="before_sub"]');
+        /*
+        */
+        await page.click('input[id="email_pay"]');
+        await page.type('input[id="email_pay"]', "alex.mignon77@gmail.com");
+        await page.click('input[id="number_pay"]');
+        await page.type('input[id="number_pay"]', "4242 4242 4242 4242");
+        await page.click('input[id="month_pay"]');
+        await page.type('input[id="month_pay"]', "12");
+        await page.click('input[id="year_pay"]');
+        await page.type('input[id="year_pay"]', "21");
+        await page.click('input[id="ccv_pay"]');
+        await page.type('input[id="ccv_pay"]', "424");
+        await page.click('input[id="sub"]');
+        await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/subscribe/payment");
+        const element = await page.$("#sub_to_stream_json_response");
+        const text = await page.evaluate(element => element.textContent, element);
+        expect(JSON.parse(text)).toMatchObject({ success: true , message:  JSON.parse(text).message , emailSent: true})
+        await browser.close();
+    }, 9000000)
+
+    test("Payment false", async () => {
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: true,
+            slowMo: 50
+        })
+        const page = await browser.newPage()
+        /* connection
+        */
+        await login(page)
+        /* récupère les infos
+        */
+        await getLogged(page)
+        /* clic sur "ça m'intéresse"
+        */
+        await page.click('input[id="before_sub"]');
+        /*
+        */
+        await page.click('input[id="email_pay"]');
+        await page.type('input[id="email_pay"]', "false.data@gmail.com");
+        await page.click('input[id="number_pay"]');
+        await page.type('input[id="number_pay"]', "4000000000000002");
+        await page.click('input[id="month_pay"]');
+        await page.type('input[id="month_pay"]', "12");
+        await page.click('input[id="year_pay"]');
+        await page.type('input[id="year_pay"]', "21");
+        await page.click('input[id="ccv_pay"]');
+        await page.type('input[id="ccv_pay"]', "424");
+        await page.click('input[id="sub"]');
+        await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/subscribe/payment");
+        const element = await page.$("#sub_to_stream_json_response");
+        const text = await page.evaluate(element => element.textContent, element);
+        expect(JSON.parse(text)).toMatchObject({ success: false , error:  JSON.parse(text).error})
+        await browser.close();
+    }, 9000000)
+
+    test("Add favorite radio", async () => {
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: true,
+            slowMo: 50
+        })
+
+        const page = await browser.newPage()
+
+        await login(page)
+        await getLogged(page)
+
+        await page.click('input[id=show_radio_channel]');
+        await page.waitForSelector('#heart_radio', { visible: true });
+        await page.click('i[id=heart_radio]');
+
+        await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/radio/favorite/102?radio_id=5e957b459f9068a9510886c7");
+
+        await browser.close();
+    }, 9000000)
 
 })
 

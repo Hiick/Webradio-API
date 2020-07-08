@@ -776,6 +776,7 @@ const createNewUser = async (req, res) => {
             }
         } catch (e) {
             let password = await addNewUser(data);
+
             const getUserId = await getUserByEmail(JSON.stringify(data.email));
 
             let channel = {
