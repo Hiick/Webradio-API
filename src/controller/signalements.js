@@ -24,6 +24,7 @@ const pool = mysql.createPool({
  */
 const registerSignalement = (data) => {
     return new Promise(function(resolve, reject) {
+        console.log(data.user_id)
         const query = `SELECT * FROM users WHERE user_id = '${data.user_id}'`;
 
         pool.query(query, async (err, rows) => {

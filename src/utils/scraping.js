@@ -3,11 +3,14 @@ const cheerio = require('cheerio'),
     mongoose = require('mongoose'),
     Radio = require('../models/radio');
 
+const httpAdapter = require('axios/lib/adapters/http');
+
 const name = [],
     logo = [],
     url = [],
     redirect_url = [];
 
+/*
 const fetchData = async (url) => {
     const html = await axios.get(url);
     return cheerio.load(html.data);
@@ -35,27 +38,24 @@ const fetchData = async (url) => {
         let flux_url = await fetchData(redirect_url[i].url);
         url.push(flux_url(".form-group .col-sm-10 input").attr('value'));
     }
+})();*/
 
-    for(let i = 0; i < 1147; i++) {
-        let radio = {
-            radio_name: name[i],
-            logo: logo[i],
-            Stream: {
-                _id: new mongoose.Types.ObjectId,
-                direct_url: url[i],
-                createdAt: new Date(),
-            },
-            radio: true,
-            status: "RADIO",
-            createdAt: new Date()
-        };
+(deleteUselessRadios = async () => {
+    const radios = await Radio.find();
 
-        const newRadio = Radio(radio);
-        newRadio.save((e) => {
-            if (e) {
-                throw new Error('Error with Radio register');
-            }
+    for (let i = 0; i < radios.length; i++) {
+        axios.get(radios[i].Stream.direct_url, {
+            responseType: 'stream', adapter: httpAdapter
+        }).then(() => {
+            console.log('Stream fonctionnel : ' + radios[i]._id)
+        }).catch(() => {
+            axios.delete('https://webradio-stream.herokuapp.com/authorized/radios/delete/' + radios[i]._id, {
+                headers: {
+                    Authorization: 'Bearer b37087add5643385ffc7be83ea24fc27c91e5344'
+                }
+            }).then(() => {
+                console.log('Radio supprimée : ' + radios[i]._id)
+            })
         });
-        console.log(i + ': Done');
     }
 })();
