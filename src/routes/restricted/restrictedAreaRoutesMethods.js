@@ -782,7 +782,7 @@ const createNewUser = async (req, res) => {
             let channel = {
                 user_id: getUserId[0].user_id,
                 channel_name: req.body.username,
-                avatar: "https://firebasestorage.googleapis.com/v0/b/webradio-stream.appspot.com/o/base_url.png?alt=media&token=a996c02e-ae13-40aa-b224-c2f4d703c606",
+                avatar: "https://firebasestorage.googleapis.com/v0/b/webradio-stream.appspot.com/o/Default%2Fimage_1.png?alt=media&token=00f9f475-a4e5-4998-b715-2631dfcccaad",
                 Flux: [{
                     stream_url: "",
                     first_source: {
