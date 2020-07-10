@@ -53,7 +53,7 @@ const costAllSubscribers = async () => {
         SELECT COUNT(*) 
         as Nombre_abonnés 
         FROM users
-        WHERE subscribe = $1`;
+        WHERE subscribe = ?`;
 
         pool.query(query, ['true'], async (err, rows) => {
             if (err) reject(err);
@@ -228,7 +228,7 @@ const costAllSignalementsForUser = (id) => {
         const query = `
         SELECT COUNT(*) as Nombre_signalements
         FROM signalements
-        WHERE channel_id = $1`;
+        WHERE channel_id = ?`;
 
         pool.query(query, [JSON.stringify(id)],(err, rows) => {
             if (err) reject(err);
@@ -271,7 +271,7 @@ const costAllActiveUsers = () => {
         const query = `
         SELECT COUNT(*) as Nombre_utilisateurs_actifs
         FROM users
-        WHERE status = $1
+        WHERE status = ?
         `;
 
         pool.query(query, ['ACTIVE'], (err, rows) => {
@@ -294,7 +294,7 @@ const costAllInactiveUsers = () => {
         const query = `
         SELECT COUNT(*) as Nombre_utilisateurs_inactifs
         FROM users
-        WHERE status = $1
+        WHERE status = ?
         `;
 
         pool.query(query, ['INACTIVE'], (err, rows) => {
