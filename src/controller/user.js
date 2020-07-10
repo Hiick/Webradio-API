@@ -39,9 +39,9 @@ module.exports = generateOAuth2Token = (id) => {
         });
 
         resolve(new Promise((resolveToken, rejectToken) => {
-                const query = "UPDATE users SET oauth_access_token = ? WHERE user_id = ?";
+                const query = "UPDATE users SET oauth_access_token = " + JSON.stringify(token) + " WHERE user_id = " + id;
 
-                pool.query(query, [JSON.stringify(token), id], (err, rows) => {
+                pool.query(query, (err, rows) => {
                     (err) ? rejectToken(err) : resolveToken(token);
                 });
             }))
@@ -58,10 +58,10 @@ const addChannelIdToNewUser = (user_id, channel_id) => {
     return new Promise((resolve, reject) => {
         const query = `
         UPDATE users 
-        SET channel_id = ?
-        WHERE user_id = ?`;
+        SET channel_id = ${channel_id}
+        WHERE user_id = ${user_id}`;
 
-        pool.query(query, [channel_id, user_id], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -81,11 +81,11 @@ const updateOneUser = (user) => {
         const query = `
         UPDATE users 
         SET 
-        username = ?, 
-        avatar = ?
-        WHERE user_id = ?`;
+        username = ${user.username}, 
+        avatar = ${user.avatar}
+        WHERE user_id = ${user.user_id}`;
 
-        pool.query(query, [user.username, user.avatar, user.user_id], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -105,12 +105,12 @@ const updateOneUserWithRole = (user) => {
         const query = `
         UPDATE users 
         SET 
-        username = ?, 
-        avatar = ?,
-        role = ?
-        WHERE user_id = ?`;
+        username = ${user.username}, 
+        avatar = ${user.avatar},
+        role = ${user.role}
+        WHERE user_id = ${user.user_id}`;
 
-        pool.query(query, [user.username, user.avatar, user.avatar, user.user_id], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -132,14 +132,14 @@ const userBack = (user, data) => {
             const query = `
                 UPDATE users
                 SET
-                username = ?,
-                avatar = ?,
-                password = ?,
-                status = ?,
-                confirmed = ?
-                WHERE user_id = ?`;
+                username = ${data.username},
+                avatar = ${user[0].avatar},
+                password = ${hash},
+                status = 'ACTIVE',
+                confirmed = 'true'
+                WHERE user_id = ${user[0].user_id}`;
 
-            pool.query(query, [data.username, user[0].avatar, hash, 'ACTIVE', true, user[0].user_id], async (err, rows) => {
+            pool.query(query, async (err, rows) => {
                 if (err) throw err;
                 if (rows && rows.length === 0 || !rows) {
                     reject('Aucun utilisateur trouvé')
@@ -161,10 +161,10 @@ const updateOneUserPassword = (user) => {
             const query = `
                UPDATE users 
                SET 
-               password = ?
-               WHERE user_id = ?`;
+               password = ${hash}
+               WHERE user_id = ${user.user_id}`;
 
-            pool.query(query, [hash, user.user_id], async (err, rows) => {
+            pool.query(query, async (err, rows) => {
                 if (err) throw err;
                 if (rows && rows.length === 0 || !rows) {
                     reject('Aucun utilisateur trouvé')
@@ -182,34 +182,21 @@ const updateOneUserPassword = (user) => {
  */
 const updateOneUserWithFacebook = (user) => {
     return new Promise((resolve, reject) => {
-        console.log(user);
-
         const query = `
         UPDATE users 
         SET 
-        facebook_user_id = ?,
-        facebook_access_token = ?,
-        email = ?,
-        username = ?, 
-        avatar = ?,
-        status = ?,
-        role = ?,
-        subscribe = ?,
-        confirmed = ?
-        WHERE user_id = ?`;
+        facebook_user_id = ${user.facebook_user_id},
+        facebook_access_token = ${user.facebook_access_token},
+        email = ${user.email},
+        username = ${user.username}, 
+        avatar = ${user.avatar},
+        status = 'ACTIVE',
+        role = 'ROLE_USER',
+        subscribe = false,
+        confirmed = true
+        WHERE user_id = ${user.user_id}`;
 
-        pool.query(query, [
-            user.facebook_user_id,
-            user.facebook_access_token,
-            user.email,
-            user.username,
-            user.avatar,
-            'ACTIVE',
-            'ROLE_USER',
-            false,
-            true,
-            user.user_id
-        ], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -358,9 +345,9 @@ const getUserById = (id) => {
         const query = `
             SELECT *
             FROM users
-            WHERE user_id = ?`;
+            WHERE user_id = ${id}`;
 
-        pool.query(query, [id], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -380,9 +367,9 @@ const getUserByEmail = (email) => {
         const query = `
             SELECT *
             FROM users
-            WHERE email = ?`;
+            WHERE email = ${email}`;
 
-        pool.query(query, [email], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
@@ -402,9 +389,9 @@ const getUserByResetPassword = (token) => {
         const query = `
             SELECT *
             FROM users
-            WHERE user_id = ? AND email = ?`;
+            WHERE user_id = ${token.user_id} AND email = ${JSON.stringify(token.email)}`;
 
-        pool.query(query, [token.user_id, JSON.stringify(token.email)], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
@@ -425,9 +412,9 @@ const confirmUserEmail = (user) => {
            UPDATE users 
            SET 
            confirmed = true
-           WHERE user_id = ? AND email = ?`;
+           WHERE user_id = ${user[0].user_id} AND email = ${JSON.stringify(user[0].email)}`;
 
-        pool.query(query, [user[0].user_id, JSON.stringify(user[0].email)], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
@@ -449,10 +436,10 @@ const updatePassword = (password, user) => {
             const query = `
             UPDATE users 
             SET 
-            password = '?'
-            WHERE user_id = ? AND email = ?`;
+            password = ${hash}
+            WHERE user_id = ${user[0].user_id} AND email = ${JSON.stringify(user[0].email)}`;
 
-            pool.query(query, [hash, user[0].user_id, JSON.stringify(user[0].email)], async (err, rows) => {
+            pool.query(query, async (err, rows) => {
                 if (err) throw err;
                 if (rows && rows.length === 0 || !rows) {
                     reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
@@ -473,9 +460,9 @@ const getUserWithOAuthToken = (token) => {
         const query = `
             SELECT *
             FROM users
-            WHERE oauth_access_token = ?`;
+            WHERE oauth_access_token = ${JSON.stringify(token)}`;
 
-        pool.query(query, [JSON.stringify(token)], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -494,9 +481,9 @@ const getAllActiveUsers = () => {
         const query = `
             SELECT *
             FROM users
-            WHERE status = ? AND status = ?`;
+            WHERE status = 'ACTIVE' AND status = 'ACTIVE '`;
 
-        pool.query(query, ['ACTIVE', 'ACTIVE '], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -515,9 +502,9 @@ const getAllInactiveUsers = () => {
         const query = `
             SELECT *
             FROM users
-            WHERE status = ?`;
+            WHERE status = 'INACTIVE'`;
 
-        pool.query(query, ['INACTIVE'], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur inactif trouvé')
@@ -536,11 +523,11 @@ const deleteUserById = async (id) => {
     return new Promise(async (resolve, reject) => {
         const query = `
         DELETE FROM users
-        WHERE user_id = ?`;
+        WHERE user_id = ${id}`;
 
         const channel = await Channel.find({ user_id: id });
 
-        pool.query(query, [id], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) reject(err);
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -561,12 +548,12 @@ const setInactiveUserById = async (id) => {
         const query = `
         UPDATE users 
         SET 
-        status = ?
-        WHERE user_id = ?`;
+        status = 'INACTIVE'
+        WHERE user_id = ${id}`;
 
         const channel = await Channel.find({ user_id: id });
 
-        pool.query(query, ['INACTIVE', id], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -589,11 +576,11 @@ const userCanStream = async (email, status, stripe_id) => {
         const query = `
         UPDATE users 
         SET 
-        subscribe = ?,
-        stripe_id = ?
-        WHERE email = ?`;
+        subscribe = ${status},
+        stripe_id = ${JSON.stringify(stripe_id)}
+        WHERE email = ${JSON.stringify(email)}`;
 
-        pool.query(query, [status, JSON.stringify(stripe_id), JSON.stringify(email)], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -614,10 +601,10 @@ const unsubscribeUser = async (user_id) => {
         const query = `
         UPDATE users 
         SET 
-        subscribe = ?
-        WHERE user_id = ?`;
+        subscribe = false
+        WHERE user_id = ${user_id}`;
 
-        pool.query(query, [false, user_id], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -657,9 +644,10 @@ const addNewUser = async (data) => {
         bcrypt.hash(password, 10, (err, hash) => {
             const query = `
               INSERT INTO users (email, username, password, status, avatar, role, subscribe, confirmed)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+              VALUES ('${data.email}','${data.username}',
+              '${hash}', 'ACTIVE', '${base_avatar}', 'ROLE_USER',false, false)`;
 
-            pool.query(query, [data.email, data.username, hash, 'ACTIVE', base_avatar, 'ROLE_USER', false, false], async (err, rows) => {
+            pool.query(query, async (err, rows) => {
                 if (err) throw err;
                 resolve(password)
             });
@@ -667,19 +655,13 @@ const addNewUser = async (data) => {
     });
 }
 
-/**
- *
- * @param user_id
- * @param radio_id
- * @returns {Promise<unknown>}
- */
 const addIntoFavorite = (user_id, radio_id) => {
     return new Promise((resolve, reject) => {
         const query = `
         INSERT INTO favoris_radios (id_user, id_radio)
-              VALUES (?, ?)`;
+              VALUES ('${user_id}','${radio_id}')`;
 
-        pool.query(query, [user_id, radio_id], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -689,19 +671,13 @@ const addIntoFavorite = (user_id, radio_id) => {
     });
 };
 
-/**
- *
- * @param user_id
- * @param channel_id
- * @returns {Promise<unknown>}
- */
 const addChannelIntoFavorite = (user_id, channel_id) => {
     return new Promise((resolve, reject) => {
         const query = `
         INSERT INTO favoris_channel (id_user, id_channel)
-              VALUES (?, ?)`;
+              VALUES ('${user_id}','${channel_id}')`;
 
-        pool.query(query, [user_id, channel_id], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -711,17 +687,12 @@ const addChannelIntoFavorite = (user_id, channel_id) => {
     });
 };
 
-/**
- *
- * @param user_id
- * @returns {Promise<unknown>}
- */
 const getUserFavoriteRadios = (user_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        SELECT favoris_radios.id_radio FROM favoris_radios WHERE id_user = ?`;
+        SELECT favoris_radios.id_radio FROM favoris_radios WHERE id_user = ${user_id}`;
 
-        pool.query(query, [user_id], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun favoris trouvé')
@@ -731,17 +702,12 @@ const getUserFavoriteRadios = (user_id) => {
     });
 };
 
-/**
- *
- * @param user_id
- * @returns {Promise<unknown>}
- */
 const getUserFavoriteChannels = (user_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        SELECT favoris_channel.id_channel FROM favoris_channel WHERE id_user = ?`;
+        SELECT favoris_channel.id_channel FROM favoris_channel WHERE id_user = ${user_id}`;
 
-        pool.query(query, [user_id], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun favoris trouvé')
@@ -751,18 +717,12 @@ const getUserFavoriteChannels = (user_id) => {
     });
 };
 
-/**
- *
- * @param user_id
- * @param radio_id
- * @returns {Promise<unknown>}
- */
 const deleteFavoriteRadioForUser = (user_id, radio_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        DELETE FROM favoris_radios WHERE favoris_radios.id_user = ? AND favoris_radios.id_radio = ?`;
+        DELETE FROM favoris_radios WHERE favoris_radios.id_user = ${user_id} AND favoris_radios.id_radio = ${JSON.stringify(radio_id)}`;
 
-        pool.query(query, [user_id, JSON.stringify(radio_id)], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun favoris trouvé')
@@ -772,18 +732,12 @@ const deleteFavoriteRadioForUser = (user_id, radio_id) => {
     });
 };
 
-/**
- *
- * @param user_id
- * @param channel_id
- * @returns {Promise<unknown>}
- */
 const deleteFavoriteChannelForUser = (user_id, channel_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        DELETE FROM favoris_channel WHERE favoris_channel.id_user = ? AND favoris_channel.id_channel = ?`;
+        DELETE FROM favoris_channel WHERE favoris_channel.id_user = ${user_id} AND favoris_channel.id_channel = ${JSON.stringify(channel_id)}`;
 
-        pool.query(query, [user_id, JSON.stringify(channel_id)], async (err, rows) => {
+        pool.query(query, async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun favoris trouvé')
