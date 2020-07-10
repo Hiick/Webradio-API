@@ -282,8 +282,11 @@ describe('User end-to-end and unit tests', () => {
     }, 9000000)
 
     /*test("Add favorite radio", async () => {
-        const browser = await puppeteer.launch()
-
+        const browser = await puppeteer.launch({
+            headless: false,
+            devtools: true,
+            slowMo: 50
+        })
         const page = await browser.newPage()
 
         await login(page)
@@ -292,8 +295,36 @@ describe('User end-to-end and unit tests', () => {
         await page.click('input[id=show_radio_channel]');
         await page.waitForSelector('#heart_radio', { visible: true });
         await page.click('i[id=heart_radio]');
-
         await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/radio/favorite/102?radio_id=5e957b459f9068a9510886c7");
+
+        const element = await page.$("#add_remove_fav_json_response");
+        const text = await page.evaluate(element => element.textContent, element);
+
+        expect(JSON.parse(text)).toMatchObject({ success: true, addFavorite:  JSON.parse(text).addFavorite})
+
+        await page.waitForSelector('#heart_channel', { visible: true });
+        await page.click('i[id=heart_channel]');
+
+        await waitForResponse(page,"https://webradio-stream.herokuapp.com/authorized/channel/favorite/102?channel_id=5f05a705fa235b001731cda4");
+
+        const element2 = await page.$("#add_remove_fav_json_response");
+        const text2 = await page.evaluate(element2 => element2.textContent, element2);
+
+        expect(JSON.parse(text2)).toMatchObject({ success: true, addFavorite:  JSON.parse(text2).addFavorite})
+
+        await page.click('i[id=heart_channel]');
+
+        const element3 = await page.$("#add_remove_fav_json_response");
+        const text3 = await page.evaluate(element3 => element3.textContent, element3);
+
+        expect(JSON.parse(text3)).toMatchObject({ success: true, deleteFavorite:  JSON.parse(text3).deleteFavorite})
+
+        await page.click('i[id=heart_radio]');
+
+        const element4 = await page.$("#add_remove_fav_json_response");
+        const text4 = await page.evaluate(element4 => element4.textContent, element4);
+
+        expect(JSON.parse(text4)).toMatchObject({ success: true, deleteFavorite:  JSON.parse(text4).deleteFavorite})
 
         await browser.close();
     }, 9000000)*/

@@ -18,16 +18,15 @@ const pool = mysql.createPool({
 });*/
 
 /**
- * @TODO Penser à changer de la table user à channel
+ *
  * @param data
  * @returns {Promise<unknown>}
  */
 const registerSignalement = (data) => {
     return new Promise(function(resolve, reject) {
-        console.log(data.user_id)
-        const query = `SELECT * FROM users WHERE user_id = '${data.user_id}'`;
+        const query = `SELECT * FROM users WHERE user_id = $1`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [data.user_id],async (err, rows) => {
             if(err) throw err;
             if (rows && rows.length === 0) {
                 reject('Aucune chaîne n\'existe à cet ID. Veuillez vérifier');
@@ -50,6 +49,10 @@ const registerSignalement = (data) => {
     });
 };
 
+/**
+ *
+ * @returns {Promise<unknown>}
+ */
 const getAllSignalements = () => {
     return new Promise((resolve, reject) => {
        const query = 'SELECT channel_id,channel_name, COUNT(*) AS nombre_signalements FROM signalements GROUP BY channel_id, channel_name';
@@ -64,11 +67,16 @@ const getAllSignalements = () => {
     });
 };
 
+/**
+ *
+ * @param data
+ * @returns {Promise<unknown>}
+ */
 const getSignalementsByID = (data) => {
     return new Promise((resolve, reject) => {
-       const query = `SELECT * FROM signalements WHERE channel_id = ${JSON.stringify(data.channel_id)}`;
+       const query = `SELECT * FROM signalements WHERE channel_id = $1`;
 
-       pool.query(query, async (err, rows) => {
+       pool.query(query, [JSON.stringify(data.channel_id)],async (err, rows) => {
            if (err) throw err;
            if (rows && rows.length === 0 || !rows) {
                reject('Aucun signalements trouvé')
@@ -78,11 +86,16 @@ const getSignalementsByID = (data) => {
     });
 };
 
+/**
+ *
+ * @param data
+ * @returns {Promise<unknown>}
+ */
 const deleteSignalementByID = (data) => {
     return new Promise((resolve, reject) => {
-        const query = `DELETE FROM signalements WHERE signalement_id = ${JSON.stringify(data.signalement_id)}`;
+        const query = `DELETE FROM signalements WHERE signalement_id = $1`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [JSON.stringify(data.signalement_id)], async (err, rows) => {
             if (err) reject(err);
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun signalements trouvé')
@@ -92,15 +105,20 @@ const deleteSignalementByID = (data) => {
     });
 };
 
+/**
+ *
+ * @param data
+ * @returns {Promise<unknown>}
+ */
 const updateSignalementByID = (data) => {
     return new Promise((resolve, reject) => {
         const query = `
         UPDATE signalements
         SET
-        motif = '${data.motif}'
-        WHERE signalement_id = ${data.id}`;
+        motif = $1
+        WHERE signalement_id = $2`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [data.motif, data.id], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -110,11 +128,16 @@ const updateSignalementByID = (data) => {
     });
 };
 
+/**
+ *
+ * @param data
+ * @returns {Promise<unknown>}
+ */
 const banishChannelByID = (data) => {
     return new Promise((resolve, reject) => {
-        const query = `DELETE FROM signalements WHERE channel_id = ${JSON.stringify(data.channel_id)}`;
+        const query = `DELETE FROM signalements WHERE channel_id = $1`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [JSON.stringify(data.channel_id)],async (err, rows) => {
             if (err) reject(err);
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun signalements trouvé')
