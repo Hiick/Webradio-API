@@ -39,7 +39,7 @@ module.exports = generateOAuth2Token = (id) => {
         });
 
         resolve(new Promise((resolveToken, rejectToken) => {
-                const query = "UPDATE users SET oauth_access_token = $1 WHERE user_id = $2";
+                const query = "UPDATE users SET oauth_access_token = ? WHERE user_id = ?";
 
                 pool.query(query, [JSON.stringify(token), id], (err, rows) => {
                     (err) ? rejectToken(err) : resolveToken(token);
@@ -58,8 +58,8 @@ const addChannelIdToNewUser = (user_id, channel_id) => {
     return new Promise((resolve, reject) => {
         const query = `
         UPDATE users 
-        SET channel_id = $1
-        WHERE user_id = $2`;
+        SET channel_id = ?
+        WHERE user_id = ?`;
 
         pool.query(query, [channel_id, user_id], async (err, rows) => {
             if (err) throw err;
@@ -81,9 +81,9 @@ const updateOneUser = (user) => {
         const query = `
         UPDATE users 
         SET 
-        username = $1, 
-        avatar = $2
-        WHERE user_id = $3`;
+        username = ?, 
+        avatar = ?
+        WHERE user_id = ?`;
 
         pool.query(query, [user.username, user.avatar, user.user_id], async (err, rows) => {
             if (err) throw err;
@@ -105,10 +105,10 @@ const updateOneUserWithRole = (user) => {
         const query = `
         UPDATE users 
         SET 
-        username = $1, 
-        avatar = $2,
-        role = $3
-        WHERE user_id = $4`;
+        username = ?, 
+        avatar = ?,
+        role = ?
+        WHERE user_id = ?`;
 
         pool.query(query, [user.username, user.avatar, user.avatar, user.user_id], async (err, rows) => {
             if (err) throw err;
@@ -132,12 +132,12 @@ const userBack = (user, data) => {
             const query = `
                 UPDATE users
                 SET
-                username = $1,
-                avatar = $2,
-                password = $3,
-                status = $4,
-                confirmed = $5
-                WHERE user_id = $6`;
+                username = ?,
+                avatar = ?,
+                password = ?,
+                status = ?,
+                confirmed = ?
+                WHERE user_id = ?`;
 
             pool.query(query, [data.username, user[0].avatar, hash, 'ACTIVE', true, user[0].user_id], async (err, rows) => {
                 if (err) throw err;
@@ -161,8 +161,8 @@ const updateOneUserPassword = (user) => {
             const query = `
                UPDATE users 
                SET 
-               password = $1
-               WHERE user_id = $2`;
+               password = ?
+               WHERE user_id = ?`;
 
             pool.query(query, [hash, user.user_id], async (err, rows) => {
                 if (err) throw err;
@@ -187,16 +187,16 @@ const updateOneUserWithFacebook = (user) => {
         const query = `
         UPDATE users 
         SET 
-        facebook_user_id = $1,
-        facebook_access_token = $2,
-        email = $3,
-        username = $4, 
-        avatar = $5,
-        status = $6,
-        role = $7,
-        subscribe = $8,
-        confirmed = $9
-        WHERE user_id = $10`;
+        facebook_user_id = ?,
+        facebook_access_token = ?,
+        email = ?,
+        username = ?, 
+        avatar = ?,
+        status = ?,
+        role = ?,
+        subscribe = ?,
+        confirmed = ?
+        WHERE user_id = ?`;
 
         pool.query(query, [
             user.facebook_user_id,
@@ -358,7 +358,7 @@ const getUserById = (id) => {
         const query = `
             SELECT *
             FROM users
-            WHERE user_id = $1`;
+            WHERE user_id = ?`;
 
         pool.query(query, [id], async (err, rows) => {
             if (err) throw err;
@@ -380,7 +380,7 @@ const getUserByEmail = (email) => {
         const query = `
             SELECT *
             FROM users
-            WHERE email = $1`;
+            WHERE email = ?`;
 
         pool.query(query, [email], async (err, rows) => {
             if (err) throw err;
@@ -402,7 +402,7 @@ const getUserByResetPassword = (token) => {
         const query = `
             SELECT *
             FROM users
-            WHERE user_id = $1 AND email = $2`;
+            WHERE user_id = ? AND email = ?`;
 
         pool.query(query, [token.user_id, JSON.stringify(token.email)], async (err, rows) => {
             if (err) throw err;
@@ -425,7 +425,7 @@ const confirmUserEmail = (user) => {
            UPDATE users 
            SET 
            confirmed = true
-           WHERE user_id = $1 AND email = $2`;
+           WHERE user_id = ? AND email = ?`;
 
         pool.query(query, [user[0].user_id, JSON.stringify(user[0].email)], async (err, rows) => {
             if (err) throw err;
@@ -449,8 +449,8 @@ const updatePassword = (password, user) => {
             const query = `
             UPDATE users 
             SET 
-            password = '$1'
-            WHERE user_id = $2 AND email = $3`;
+            password = '?'
+            WHERE user_id = ? AND email = ?`;
 
             pool.query(query, [hash, user[0].user_id, JSON.stringify(user[0].email)], async (err, rows) => {
                 if (err) throw err;
@@ -473,7 +473,7 @@ const getUserWithOAuthToken = (token) => {
         const query = `
             SELECT *
             FROM users
-            WHERE oauth_access_token = $1`;
+            WHERE oauth_access_token = ?`;
 
         pool.query(query, [JSON.stringify(token)], async (err, rows) => {
             if (err) throw err;
@@ -494,7 +494,7 @@ const getAllActiveUsers = () => {
         const query = `
             SELECT *
             FROM users
-            WHERE status = $1 AND status = $2`;
+            WHERE status = ? AND status = ?`;
 
         pool.query(query, ['ACTIVE', 'ACTIVE '], async (err, rows) => {
             if (err) throw err;
@@ -515,7 +515,7 @@ const getAllInactiveUsers = () => {
         const query = `
             SELECT *
             FROM users
-            WHERE status = $1`;
+            WHERE status = ?`;
 
         pool.query(query, ['INACTIVE'], async (err, rows) => {
             if (err) throw err;
@@ -536,7 +536,7 @@ const deleteUserById = async (id) => {
     return new Promise(async (resolve, reject) => {
         const query = `
         DELETE FROM users
-        WHERE user_id = $1`;
+        WHERE user_id = ?`;
 
         const channel = await Channel.find({ user_id: id });
 
@@ -561,8 +561,8 @@ const setInactiveUserById = async (id) => {
         const query = `
         UPDATE users 
         SET 
-        status = $1
-        WHERE user_id = $2`;
+        status = ?
+        WHERE user_id = ?`;
 
         const channel = await Channel.find({ user_id: id });
 
@@ -589,9 +589,9 @@ const userCanStream = async (email, status, stripe_id) => {
         const query = `
         UPDATE users 
         SET 
-        subscribe = $1,
-        stripe_id = $2
-        WHERE email = $3`;
+        subscribe = ?,
+        stripe_id = ?
+        WHERE email = ?`;
 
         pool.query(query, [status, JSON.stringify(stripe_id), JSON.stringify(email)], async (err, rows) => {
             if (err) throw err;
@@ -614,8 +614,8 @@ const unsubscribeUser = async (user_id) => {
         const query = `
         UPDATE users 
         SET 
-        subscribe = $1
-        WHERE user_id = $2`;
+        subscribe = ?
+        WHERE user_id = ?`;
 
         pool.query(query, [false, user_id], async (err, rows) => {
             if (err) throw err;
@@ -657,7 +657,7 @@ const addNewUser = async (data) => {
         bcrypt.hash(password, 10, (err, hash) => {
             const query = `
               INSERT INTO users (email, username, password, status, avatar, role, subscribe, confirmed)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
             pool.query(query, [data.email, data.username, hash, 'ACTIVE', base_avatar, 'ROLE_USER', false, false], async (err, rows) => {
                 if (err) throw err;
@@ -677,7 +677,7 @@ const addIntoFavorite = (user_id, radio_id) => {
     return new Promise((resolve, reject) => {
         const query = `
         INSERT INTO favoris_radios (id_user, id_radio)
-              VALUES ($1, $2)`;
+              VALUES (?, ?)`;
 
         pool.query(query, [user_id, radio_id], async (err, rows) => {
             if (err) throw err;
@@ -699,7 +699,7 @@ const addChannelIntoFavorite = (user_id, channel_id) => {
     return new Promise((resolve, reject) => {
         const query = `
         INSERT INTO favoris_channel (id_user, id_channel)
-              VALUES ($1, $2)`;
+              VALUES (?, ?)`;
 
         pool.query(query, [user_id, channel_id], async (err, rows) => {
             if (err) throw err;
@@ -719,7 +719,7 @@ const addChannelIntoFavorite = (user_id, channel_id) => {
 const getUserFavoriteRadios = (user_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        SELECT favoris_radios.id_radio FROM favoris_radios WHERE id_user = $1`;
+        SELECT favoris_radios.id_radio FROM favoris_radios WHERE id_user = ?`;
 
         pool.query(query, [user_id], async (err, rows) => {
             if (err) throw err;
@@ -739,7 +739,7 @@ const getUserFavoriteRadios = (user_id) => {
 const getUserFavoriteChannels = (user_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        SELECT favoris_channel.id_channel FROM favoris_channel WHERE id_user = $1`;
+        SELECT favoris_channel.id_channel FROM favoris_channel WHERE id_user = ?`;
 
         pool.query(query, [user_id], async (err, rows) => {
             if (err) throw err;
@@ -760,7 +760,7 @@ const getUserFavoriteChannels = (user_id) => {
 const deleteFavoriteRadioForUser = (user_id, radio_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        DELETE FROM favoris_radios WHERE favoris_radios.id_user = $1 AND favoris_radios.id_radio = $2`;
+        DELETE FROM favoris_radios WHERE favoris_radios.id_user = ? AND favoris_radios.id_radio = ?`;
 
         pool.query(query, [user_id, JSON.stringify(radio_id)], async (err, rows) => {
             if (err) throw err;
@@ -781,7 +781,7 @@ const deleteFavoriteRadioForUser = (user_id, radio_id) => {
 const deleteFavoriteChannelForUser = (user_id, channel_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        DELETE FROM favoris_channel WHERE favoris_channel.id_user = $1 AND favoris_channel.id_channel = $2`;
+        DELETE FROM favoris_channel WHERE favoris_channel.id_user = ? AND favoris_channel.id_channel = ?`;
 
         pool.query(query, [user_id, JSON.stringify(channel_id)], async (err, rows) => {
             if (err) throw err;

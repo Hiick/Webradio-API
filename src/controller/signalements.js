@@ -24,7 +24,7 @@ const pool = mysql.createPool({
  */
 const registerSignalement = (data) => {
     return new Promise(function(resolve, reject) {
-        const query = `SELECT * FROM users WHERE user_id = $1`;
+        const query = `SELECT * FROM users WHERE user_id = ?`;
 
         pool.query(query, [data.user_id],async (err, rows) => {
             if(err) throw err;
@@ -74,7 +74,7 @@ const getAllSignalements = () => {
  */
 const getSignalementsByID = (data) => {
     return new Promise((resolve, reject) => {
-       const query = `SELECT * FROM signalements WHERE channel_id = $1`;
+       const query = `SELECT * FROM signalements WHERE channel_id = ?`;
 
        pool.query(query, [JSON.stringify(data.channel_id)],async (err, rows) => {
            if (err) throw err;
@@ -93,7 +93,7 @@ const getSignalementsByID = (data) => {
  */
 const deleteSignalementByID = (data) => {
     return new Promise((resolve, reject) => {
-        const query = `DELETE FROM signalements WHERE signalement_id = $1`;
+        const query = `DELETE FROM signalements WHERE signalement_id = ?`;
 
         pool.query(query, [JSON.stringify(data.signalement_id)], async (err, rows) => {
             if (err) reject(err);
@@ -115,8 +115,8 @@ const updateSignalementByID = (data) => {
         const query = `
         UPDATE signalements
         SET
-        motif = $1
-        WHERE signalement_id = $2`;
+        motif = ?
+        WHERE signalement_id = ?`;
 
         pool.query(query, [data.motif, data.id], async (err, rows) => {
             if (err) throw err;
@@ -135,7 +135,7 @@ const updateSignalementByID = (data) => {
  */
 const banishChannelByID = (data) => {
     return new Promise((resolve, reject) => {
-        const query = `DELETE FROM signalements WHERE channel_id = $1`;
+        const query = `DELETE FROM signalements WHERE channel_id = ?`;
 
         pool.query(query, [JSON.stringify(data.channel_id)],async (err, rows) => {
             if (err) reject(err);
