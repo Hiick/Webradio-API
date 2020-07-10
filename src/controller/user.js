@@ -23,7 +23,10 @@ const pool = mysql.createPool({
     database: 'DBTest'
 });*/
 
-
+/**
+ *
+ * @type {function(*=): Promise<unknown>}
+ */
 module.exports = generateOAuth2Token = (id) => {
     return new Promise(async (resolve) => {
         const token = await new Promise(async (resolveToken) => {
@@ -36,23 +39,29 @@ module.exports = generateOAuth2Token = (id) => {
         });
 
         resolve(new Promise((resolveToken, rejectToken) => {
-                const query = "UPDATE users SET oauth_access_token = " + JSON.stringify(token) + " WHERE user_id = "+id;
+                const query = "UPDATE users SET oauth_access_token = $1 WHERE user_id = $2";
 
-                pool.query(query, (err, rows) => {
+                pool.query(query, [JSON.stringify(token), id], (err, rows) => {
                     (err) ? rejectToken(err) : resolveToken(token);
                 });
             }))
     });
 };
 
+/**
+ *
+ * @param user_id
+ * @param channel_id
+ * @returns {Promise<unknown>}
+ */
 const addChannelIdToNewUser = (user_id, channel_id) => {
     return new Promise((resolve, reject) => {
         const query = `
         UPDATE users 
-        SET channel_id = '${channel_id}'
-        WHERE user_id = ${user_id}`;
+        SET channel_id = $1
+        WHERE user_id = $2`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [channel_id, user_id], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -62,16 +71,21 @@ const addChannelIdToNewUser = (user_id, channel_id) => {
     });
 };
 
+/**
+ *
+ * @param user
+ * @returns {Promise<unknown>}
+ */
 const updateOneUser = (user) => {
     return new Promise((resolve, reject) => {
         const query = `
         UPDATE users 
         SET 
-        username = '${user.username}', 
-        avatar = '${user.avatar}'
-        WHERE user_id = ${user.user_id}`;
+        username = $1, 
+        avatar = $2
+        WHERE user_id = $3`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [user.username, user.avatar, user.user_id], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -81,17 +95,22 @@ const updateOneUser = (user) => {
     });
 };
 
+/**
+ *
+ * @param user
+ * @returns {Promise<unknown>}
+ */
 const updateOneUserWithRole = (user) => {
     return new Promise((resolve, reject) => {
         const query = `
         UPDATE users 
         SET 
-        username = '${user.username}', 
-        avatar = '${user.avatar}',
-        role = '${user.avatar}'
-        WHERE user_id = ${user.user_id}`;
+        username = $1, 
+        avatar = $2,
+        role = $3
+        WHERE user_id = $4`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [user.username, user.avatar, user.avatar, user.user_id], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -101,20 +120,26 @@ const updateOneUserWithRole = (user) => {
     });
 };
 
+/**
+ *
+ * @param user
+ * @param data
+ * @returns {Promise<unknown>}
+ */
 const userBack = (user, data) => {
     return new Promise((resolve, reject) => {
         bcrypt.hash(data.password, 10, (err, hash) => {
             const query = `
                 UPDATE users
                 SET
-                username = '${data.username}',
-                avatar = '${user[0].avatar}',
-                password = '${hash}',
-                status = 'ACTIVE',
-                confirmed = true
-                WHERE user_id = ${user[0].user_id}`;
+                username = $1,
+                avatar = $2,
+                password = $3,
+                status = $4,
+                confirmed = $5
+                WHERE user_id = $6`;
 
-            pool.query(query, async (err, rows) => {
+            pool.query(query, [data.username, user[0].avatar, hash, 'ACTIVE', true, user[0].user_id], async (err, rows) => {
                 if (err) throw err;
                 if (rows && rows.length === 0 || !rows) {
                     reject('Aucun utilisateur trouvé')
@@ -125,16 +150,21 @@ const userBack = (user, data) => {
     });
 };
 
+/**
+ *
+ * @param user
+ * @returns {Promise<unknown>}
+ */
 const updateOneUserPassword = (user) => {
     return new Promise((resolve, reject) => {
         bcrypt.hash(user.password, 10, (err, hash) => {
             const query = `
                UPDATE users 
                SET 
-               password = '${hash}'
-               WHERE user_id = ${user.user_id}`;
+               password = $1
+               WHERE user_id = $2`;
 
-            pool.query(query, async (err, rows) => {
+            pool.query(query, [hash, user.user_id], async (err, rows) => {
                 if (err) throw err;
                 if (rows && rows.length === 0 || !rows) {
                     reject('Aucun utilisateur trouvé')
@@ -145,6 +175,11 @@ const updateOneUserPassword = (user) => {
     });
 };
 
+/**
+ *
+ * @param user
+ * @returns {Promise<unknown>}
+ */
 const updateOneUserWithFacebook = (user) => {
     return new Promise((resolve, reject) => {
         console.log(user);
@@ -152,18 +187,29 @@ const updateOneUserWithFacebook = (user) => {
         const query = `
         UPDATE users 
         SET 
-        facebook_user_id = '${user.facebook_user_id}',
-        facebook_access_token = '${user.facebook_access_token}',
-        email = '${user.email}',
-        username = '${user.username}', 
-        avatar = '${user.avatar}',
-        status = 'ACTIVE',
-        role = 'ROLE_USER',
-        subscribe = false,
-        confirmed = true
-        WHERE user_id = ${user.user_id}`;
+        facebook_user_id = $1,
+        facebook_access_token = $2,
+        email = $3,
+        username = $4, 
+        avatar = $5,
+        status = $6,
+        role = $7,
+        subscribe = $8,
+        confirmed = $9
+        WHERE user_id = $10`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [
+            user.facebook_user_id,
+            user.facebook_access_token,
+            user.email,
+            user.username,
+            user.avatar,
+            'ACTIVE',
+            'ROLE_USER',
+            false,
+            true,
+            user.user_id
+        ], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -173,6 +219,11 @@ const updateOneUserWithFacebook = (user) => {
     });
 };
 
+/**
+ *
+ * @param token
+ * @returns {Promise<unknown>}
+ */
 const facebookUserLogin = async (token) => {
     return new Promise(async (resolve, reject) => {
         let getFacebookProfile = "https://graph.facebook.com/me?fields=birthday,email,hometown,name,picture.type(large)&access_token=" + token + "";
@@ -277,6 +328,10 @@ const facebookUserLogin = async (token) => {
     });
 };
 
+/**
+ *
+ * @returns {Promise<unknown>}
+ */
 const getAllUsers = () => {
     return new Promise((resolve, reject) => {
         const query = `
@@ -293,14 +348,19 @@ const getAllUsers = () => {
     })
 };
 
+/**
+ *
+ * @param id
+ * @returns {Promise<unknown>}
+ */
 const getUserById = (id) => {
     return new Promise((resolve, reject) => {
         const query = `
             SELECT *
             FROM users
-            WHERE user_id = ${id}`;
+            WHERE user_id = $1`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [id], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -310,14 +370,19 @@ const getUserById = (id) => {
     })
 };
 
+/**
+ *
+ * @param email
+ * @returns {Promise<unknown>}
+ */
 const getUserByEmail = (email) => {
     return new Promise((resolve, reject) => {
         const query = `
             SELECT *
             FROM users
-            WHERE email = ${email}`;
+            WHERE email = $1`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [email], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
@@ -327,14 +392,19 @@ const getUserByEmail = (email) => {
     })
 };
 
+/**
+ *
+ * @param token
+ * @returns {Promise<unknown>}
+ */
 const getUserByResetPassword = (token) => {
     return new Promise((resolve, reject) => {
         const query = `
             SELECT *
             FROM users
-            WHERE user_id = ${token.user_id} AND email = ${JSON.stringify(token.email)}`;
+            WHERE user_id = $1 AND email = $2`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [token.user_id, JSON.stringify(token.email)], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
@@ -344,15 +414,20 @@ const getUserByResetPassword = (token) => {
     })
 };
 
+/**
+ *
+ * @param user
+ * @returns {Promise<unknown>}
+ */
 const confirmUserEmail = (user) => {
     return new Promise((resolve, reject) => {
         const query = `
            UPDATE users 
            SET 
            confirmed = true
-           WHERE user_id = ${user[0].user_id} AND email = ${JSON.stringify(user[0].email)}`;
+           WHERE user_id = $1 AND email = $2`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [user[0].user_id, JSON.stringify(user[0].email)], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
@@ -362,16 +437,22 @@ const confirmUserEmail = (user) => {
     })
 }
 
+/**
+ *
+ * @param password
+ * @param user
+ * @returns {Promise<unknown>}
+ */
 const updatePassword = (password, user) => {
     return new Promise((resolve, reject) => {
         bcrypt.hash(password, 10, (err, hash) => {
             const query = `
             UPDATE users 
             SET 
-            password = '${hash}'
-            WHERE user_id = ${user[0].user_id} AND email = ${JSON.stringify(user[0].email)}`;
+            password = '$1'
+            WHERE user_id = $2 AND email = $3`;
 
-            pool.query(query, async (err, rows) => {
+            pool.query(query, [hash, user[0].user_id, JSON.stringify(user[0].email)], async (err, rows) => {
                 if (err) throw err;
                 if (rows && rows.length === 0 || !rows) {
                     reject('Il semblerait que vous n\'existez pas chez nous. Merci de vous inscrire !')
@@ -382,14 +463,19 @@ const updatePassword = (password, user) => {
     })
 };
 
+/**
+ *
+ * @param token
+ * @returns {Promise<unknown>}
+ */
 const getUserWithOAuthToken = (token) => {
     return new Promise((resolve, reject) => {
         const query = `
             SELECT *
             FROM users
-            WHERE oauth_access_token = ${JSON.stringify(token)}`;
+            WHERE oauth_access_token = $1`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [JSON.stringify(token)], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -399,14 +485,18 @@ const getUserWithOAuthToken = (token) => {
     })
 };
 
+/**
+ *
+ * @returns {Promise<unknown>}
+ */
 const getAllActiveUsers = () => {
     return new Promise((resolve, reject) => {
         const query = `
             SELECT *
             FROM users
-            WHERE status = 'ACTIVE' AND status = 'ACTIVE '`;
+            WHERE status = $1 AND status = $2`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, ['ACTIVE', 'ACTIVE '], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -416,14 +506,18 @@ const getAllActiveUsers = () => {
     })
 };
 
+/**
+ *
+ * @returns {Promise<unknown>}
+ */
 const getAllInactiveUsers = () => {
     return new Promise((resolve, reject) => {
         const query = `
             SELECT *
             FROM users
-            WHERE status = 'INACTIVE'`;
+            WHERE status = $1`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, ['INACTIVE'], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur inactif trouvé')
@@ -433,15 +527,20 @@ const getAllInactiveUsers = () => {
     })
 };
 
+/**
+ *
+ * @param id
+ * @returns {Promise<unknown>}
+ */
 const deleteUserById = async (id) => {
     return new Promise(async (resolve, reject) => {
         const query = `
         DELETE FROM users
-        WHERE user_id = ${id}`;
+        WHERE user_id = $1`;
 
         const channel = await Channel.find({ user_id: id });
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [id], async (err, rows) => {
             if (err) reject(err);
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -452,17 +551,22 @@ const deleteUserById = async (id) => {
     });
 };
 
+/**
+ *
+ * @param id
+ * @returns {Promise<unknown>}
+ */
 const setInactiveUserById = async (id) => {
     return new Promise(async (resolve, reject) => {
         const query = `
         UPDATE users 
         SET 
-        status = 'INACTIVE'
-        WHERE user_id = ${id}`;
+        status = $1
+        WHERE user_id = $2`;
 
         const channel = await Channel.find({ user_id: id });
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, ['INACTIVE', id], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -473,16 +577,23 @@ const setInactiveUserById = async (id) => {
     });
 };
 
+/**
+ *
+ * @param email
+ * @param status
+ * @param stripe_id
+ * @returns {Promise<unknown>}
+ */
 const userCanStream = async (email, status, stripe_id) => {
     return new Promise(async (resolve, reject) => {
         const query = `
         UPDATE users 
         SET 
-        subscribe = ${status},
-        stripe_id = ${JSON.stringify(stripe_id)}
-        WHERE email = ${JSON.stringify(email)}`;
+        subscribe = $1,
+        stripe_id = $2
+        WHERE email = $3`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [status, JSON.stringify(stripe_id), JSON.stringify(email)], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -493,15 +604,20 @@ const userCanStream = async (email, status, stripe_id) => {
     });
 }
 
+/**
+ *
+ * @param user_id
+ * @returns {Promise<unknown>}
+ */
 const unsubscribeUser = async (user_id) => {
     return new Promise(async (resolve, reject) => {
         const query = `
         UPDATE users 
         SET 
-        subscribe = false,
-        WHERE user_id = ${user_id}`;
+        subscribe = $1
+        WHERE user_id = $2`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [false, user_id], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -512,6 +628,11 @@ const unsubscribeUser = async (user_id) => {
     });
 }
 
+/**
+ *
+ * @param length
+ * @returns {string}
+ */
 const generatePassword = (length) => {
     let result           = '';
     let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&(§!-_';
@@ -522,6 +643,11 @@ const generatePassword = (length) => {
     return result;
 }
 
+/**
+ *
+ * @param data
+ * @returns {Promise<unknown>}
+ */
 const addNewUser = async (data) => {
     let base_avatar = "https://firebasestorage.googleapis.com/v0/b/webradio-stream.appspot.com/o/base_url.png?alt=media&token=a996c02e-ae13-40aa-b224-c2f4d703c606";
 
@@ -531,10 +657,9 @@ const addNewUser = async (data) => {
         bcrypt.hash(password, 10, (err, hash) => {
             const query = `
               INSERT INTO users (email, username, password, status, avatar, role, subscribe, confirmed)
-              VALUES ('${data.email}','${data.username}',
-              '${hash}', 'ACTIVE', '${base_avatar}', 'ROLE_USER',false, false)`;
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
 
-            pool.query(query, async (err, rows) => {
+            pool.query(query, [data.email, data.username, hash, 'ACTIVE', base_avatar, 'ROLE_USER', false, false], async (err, rows) => {
                 if (err) throw err;
                 resolve(password)
             });
@@ -542,13 +667,19 @@ const addNewUser = async (data) => {
     });
 }
 
+/**
+ *
+ * @param user_id
+ * @param radio_id
+ * @returns {Promise<unknown>}
+ */
 const addIntoFavorite = (user_id, radio_id) => {
     return new Promise((resolve, reject) => {
         const query = `
         INSERT INTO favoris_radios (id_user, id_radio)
-              VALUES ('${user_id}','${radio_id}')`;
+              VALUES ($1, $2)`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [user_id, radio_id], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -558,13 +689,19 @@ const addIntoFavorite = (user_id, radio_id) => {
     });
 };
 
+/**
+ *
+ * @param user_id
+ * @param channel_id
+ * @returns {Promise<unknown>}
+ */
 const addChannelIntoFavorite = (user_id, channel_id) => {
     return new Promise((resolve, reject) => {
         const query = `
         INSERT INTO favoris_channel (id_user, id_channel)
-              VALUES ('${user_id}','${channel_id}')`;
+              VALUES ($1, $2)`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [user_id, channel_id], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -574,12 +711,17 @@ const addChannelIntoFavorite = (user_id, channel_id) => {
     });
 };
 
+/**
+ *
+ * @param user_id
+ * @returns {Promise<unknown>}
+ */
 const getUserFavoriteRadios = (user_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        SELECT favoris_radios.id_radio FROM favoris_radios WHERE id_user = ${user_id}`;
+        SELECT favoris_radios.id_radio FROM favoris_radios WHERE id_user = $1`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [user_id], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun favoris trouvé')
@@ -589,12 +731,17 @@ const getUserFavoriteRadios = (user_id) => {
     });
 };
 
+/**
+ *
+ * @param user_id
+ * @returns {Promise<unknown>}
+ */
 const getUserFavoriteChannels = (user_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        SELECT favoris_channel.id_channel FROM favoris_channel WHERE id_user = ${user_id}`;
+        SELECT favoris_channel.id_channel FROM favoris_channel WHERE id_user = $1`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [user_id], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun favoris trouvé')
@@ -604,12 +751,18 @@ const getUserFavoriteChannels = (user_id) => {
     });
 };
 
+/**
+ *
+ * @param user_id
+ * @param radio_id
+ * @returns {Promise<unknown>}
+ */
 const deleteFavoriteRadioForUser = (user_id, radio_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        DELETE FROM favoris_radios WHERE favoris_radios.id_user = ${user_id} AND favoris_radios.id_radio = ${JSON.stringify(radio_id)}`;
+        DELETE FROM favoris_radios WHERE favoris_radios.id_user = $1 AND favoris_radios.id_radio = $2`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [user_id, JSON.stringify(radio_id)], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun favoris trouvé')
@@ -619,12 +772,18 @@ const deleteFavoriteRadioForUser = (user_id, radio_id) => {
     });
 };
 
+/**
+ *
+ * @param user_id
+ * @param channel_id
+ * @returns {Promise<unknown>}
+ */
 const deleteFavoriteChannelForUser = (user_id, channel_id) => {
     return new Promise((resolve, reject) => {
         const query = `
-        DELETE FROM favoris_channel WHERE favoris_channel.id_user = ${user_id} AND favoris_channel.id_channel = ${JSON.stringify(channel_id)}`;
+        DELETE FROM favoris_channel WHERE favoris_channel.id_user = $1 AND favoris_channel.id_channel = $2`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, [user_id, JSON.stringify(channel_id)], async (err, rows) => {
             if (err) throw err;
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun favoris trouvé')

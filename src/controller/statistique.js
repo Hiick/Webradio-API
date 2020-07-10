@@ -25,6 +25,10 @@ const pool = mysql.createPool({
 const Radio = require('../models/radio'),
     Channel = require('../models/channel');
 
+/**
+ *
+ * @returns {Promise<unknown>}
+ */
 const costAllUsers = async () => {
     return new Promise((resolve, reject) => {
         const query = `SELECT COUNT(*) as Nombre_utilisateurs FROM users`;
@@ -39,15 +43,19 @@ const costAllUsers = async () => {
     });
 };
 
+/**
+ *
+ * @returns {Promise<unknown>}
+ */
 const costAllSubscribers = async () => {
     return new Promise((resolve, reject) => {
         const query = `
         SELECT COUNT(*) 
         as Nombre_abonnés 
         FROM users
-        WHERE subscribe = true`;
+        WHERE subscribe = $1`;
 
-        pool.query(query, async (err, rows) => {
+        pool.query(query, ['true'], async (err, rows) => {
             if (err) reject(err);
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -57,6 +65,10 @@ const costAllSubscribers = async () => {
     });
 };
 
+/**
+ *
+ * @returns {Promise<*|[]>}
+ */
 const costAllListen = async () => {
     let result = [];
 
@@ -80,6 +92,10 @@ const costAllListen = async () => {
     return result
 };
 
+/**
+ *
+ * @returns {Promise<*|[]>}
+ */
 const costAllStreamsListen = async () => {
     let result = [];
 
@@ -97,6 +113,10 @@ const costAllStreamsListen = async () => {
     return result
 };
 
+/**
+ *
+ * @returns {Promise<*|[]>}
+ */
 const costAllRadiosListen = async () => {
     let result = [];
 
@@ -114,14 +134,26 @@ const costAllRadiosListen = async () => {
     return result
 };
 
+/**
+ *
+ * @returns {Promise<*>}
+ */
 const costAllActiveChannels = async () => {
     return Channel.find({ status: 'ACTIVE' }).countDocuments();
 };
 
+/**
+ *
+ * @returns {Promise<*>}
+ */
 const costAllRadios = async () => {
     return Radio.find().countDocuments();
 };
 
+/**
+ *
+ * @returns {Promise<*|[]>}
+ */
 const costAllCreatedStream = async () => {
     let result = [];
 
@@ -139,6 +171,11 @@ const costAllCreatedStream = async () => {
     return result
 };
 
+/**
+ *
+ * @param id
+ * @returns {Promise<String|StringConstructor|{message: string}>}
+ */
 const costAllCreatedStreamByUser = async (id) => {
     const created_stream = await Channel.findById({ _id: id });
 
@@ -150,6 +187,11 @@ const costAllCreatedStreamByUser = async (id) => {
 
 };
 
+/**
+ *
+ * @param id
+ * @returns {Promise<{message: string}|number>}
+ */
 const costAllFavoriteForUser = async (id) => {
     const channel = await Channel.findById({ _id: id });
 
@@ -161,6 +203,11 @@ const costAllFavoriteForUser = async (id) => {
 
 };
 
+/**
+ *
+ * @param id
+ * @returns {Promise<{message: string}|number|Number|NumberConstructor>}
+ */
 const costAllListenForUser = async (id) => {
     const channel = await Channel.findById({ _id: id });
 
@@ -171,14 +218,19 @@ const costAllListenForUser = async (id) => {
     }
 };
 
+/**
+ *
+ * @param id
+ * @returns {Promise<unknown>}
+ */
 const costAllSignalementsForUser = (id) => {
     return new Promise((resolve, reject) => {
         const query = `
         SELECT COUNT(*) as Nombre_signalements
         FROM signalements
-        WHERE channel_id = ${JSON.stringify(id)}`;
+        WHERE channel_id = $1`;
 
-        pool.query(query, (err, rows) => {
+        pool.query(query, [JSON.stringify(id)],(err, rows) => {
             if (err) reject(err);
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun signalement trouvé')
@@ -188,6 +240,10 @@ const costAllSignalementsForUser = (id) => {
     });
 };
 
+/**
+ *
+ * @returns {Promise<unknown>}
+ */
 const costAllSignalements = () => {
     return new Promise((resolve, reject) => {
         const query = `
@@ -206,15 +262,19 @@ const costAllSignalements = () => {
     });
 };
 
+/**
+ *
+ * @returns {Promise<unknown>}
+ */
 const costAllActiveUsers = () => {
     return new Promise((resolve, reject) => {
         const query = `
         SELECT COUNT(*) as Nombre_utilisateurs_actifs
         FROM users
-        WHERE status = 'ACTIVE'
+        WHERE status = $1
         `;
 
-        pool.query(query, (err, rows) => {
+        pool.query(query, ['ACTIVE'], (err, rows) => {
             if (err) reject(err);
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -225,15 +285,19 @@ const costAllActiveUsers = () => {
     });
 };
 
+/**
+ *
+ * @returns {Promise<unknown>}
+ */
 const costAllInactiveUsers = () => {
     return new Promise((resolve, reject) => {
         const query = `
         SELECT COUNT(*) as Nombre_utilisateurs_inactifs
         FROM users
-        WHERE status = 'INACTIVE'
+        WHERE status = $1
         `;
 
-        pool.query(query, (err, rows) => {
+        pool.query(query, ['INACTIVE'], (err, rows) => {
             if (err) reject(err);
             if (rows && rows.length === 0 || !rows) {
                 reject('Aucun utilisateur trouvé')
@@ -244,14 +308,27 @@ const costAllInactiveUsers = () => {
     });
 };
 
+/**
+ *
+ * @returns {Promise<*>}
+ */
 const costAllInactiveChannels = async () => {
     return await Channel.find({ status: 'INACTIVE' }).countDocuments();
 };
 
+/**
+ *
+ * @returns {Promise<*>}
+ */
 const costAllBanishChannels = async () => {
     return await Channel.find({ status: 'BANISH' }).countDocuments();
 };
 
+/**
+ *
+ * @param id
+ * @returns {Promise<Number|NumberConstructor|{message: string}>}
+ */
 const costAllPlanStreamForUser = async (id) => {
     const channel = await Channel.findById({ _id: id });
 
@@ -262,6 +339,10 @@ const costAllPlanStreamForUser = async (id) => {
     }
 };
 
+/**
+ *
+ * @returns {Promise<{message: string}|*>}
+ */
 const costAllPlan = async () => {
     const channel = await Channel.find();
 

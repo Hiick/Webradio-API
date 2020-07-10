@@ -465,7 +465,7 @@ const sendEmail = async (user, res) => {
                               <table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation">
                                 <tr>
                                   <td align="center">
-                                    <a href="https://webradio-stream.herokuapp.com/auth/reset/password/${token}" class="f-fallback button" target="_blank">Réinitialiser votre mot de passe</a>
+                                    <a href="https://website-webradio-test.herokuapp.com/reset/${token}" class="f-fallback button" target="_blank">Réinitialiser votre mot de passe</a>
                                   </td>
                                 </tr>
                               </table>
