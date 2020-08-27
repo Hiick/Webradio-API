@@ -52,7 +52,8 @@ const {
 
 const {
     recordVoice,
-    stopRecordVoice
+    stopRecordVoice,
+    createStreamFromFolder
 } = require('../../controller/stream');
 
 const {
@@ -858,7 +859,7 @@ const getFirstStream = (req, res) => {
         });
     }
 };
-const recordStream = async (req, res) => {
+/*const recordStream = async (req, res) => {
     let channel = req.params.channel_id;
     let radio = req.query.radio_id;
 
@@ -889,7 +890,27 @@ const stopStream = async (req, res) => {
             message: err
         });
     }
-};
+};*/
+// ICI
+const createStream = async (req, res) => {
+    let channel = req.params.channel_id;
+    let radio = req.query.radio_id;
+    let file = req.file
+
+    try {
+        await createStreamFromFolder(channel, radio, file);
+
+        res.status(200).send({
+            success: true,
+            message: 'Created'
+        });
+    } catch (err) {
+        res.status(400).send({
+            success: false,
+            message: err
+        });
+    }
+}
 // Don't forget to register stream
 // Mixe 2 stream
 // Diffuse mixed stream ?
@@ -1534,8 +1555,9 @@ module.exports = {
     createNewUser: createNewUser,
 
     getFirstStream: getFirstStream,
-    recordStream: recordStream,
-    stopStream: stopStream,
+    /*recordStream: recordStream,
+    stopStream: stopStream,*/
+    createStream,
 
     costUsers: costUsers,
     costSubscribe: costSubscribe,

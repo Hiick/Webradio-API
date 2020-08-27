@@ -1,4 +1,9 @@
 const {validateRequest} = require('../../utils/validators');
+const multer = require('multer');
+const upload = multer({ dest: 'tmp/',fileFilter:function(req,file,cb){
+        cb(null,true);
+    }
+});
 
 module.exports = (router, check, app, restrictedAreaRoutesMethods) => {
 
@@ -91,9 +96,10 @@ module.exports = (router, check, app, restrictedAreaRoutesMethods) => {
     /**
      * ALL ROUTES FOR STREAMS
      */
-    router.get('/stream/record/:channel_id', restrictedAreaRoutesMethods.recordStream);
-    router.get('/stream/stop', restrictedAreaRoutesMethods.stopStream);
+    /*router.get('/stream/record/:channel_id', restrictedAreaRoutesMethods.recordStream);
+    router.get('/stream/stop', restrictedAreaRoutesMethods.stopStream);*/
     router.get('/stream/generate/:channel_id', restrictedAreaRoutesMethods.getFirstStream);
+    router.post('/stream/create/:channel_id', upload.single('audio'), restrictedAreaRoutesMethods.createStream)
 
 
     return router
