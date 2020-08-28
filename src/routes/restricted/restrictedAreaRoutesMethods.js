@@ -54,7 +54,9 @@ const {
     recordVoice,
     stopRecordVoice,
     createStreamFromFolder,
-    listenChannelStream
+    listenChannelStream,
+    removeChannelInLive,
+    setChannelInLive
 } = require('../../controller/stream');
 
 const {
@@ -912,7 +914,6 @@ const createStream = async(req, res) => {
     }
 }
 
-
 const listenStream = async(req, res) => {
     let channel_id = req.params.channel_id;
 
@@ -922,6 +923,42 @@ const listenStream = async(req, res) => {
         res.status(200).send({
             success: true,
             message: 'Enjoy it!'
+        });
+    } catch (err) {
+        res.status(400).send({
+            success: false,
+            message: err
+        });
+    }
+}
+
+const setLive = async (req, res) => {
+    let channel_id = req.params.channel_id;
+
+    try {
+        await setChannelInLive(channel_id);
+
+        res.status(200).send({
+            success: true,
+            message: 'Channel is now in live'
+        });
+    } catch (err) {
+        res.status(400).send({
+            success: false,
+            message: err
+        });
+    }
+}
+
+const removeLive = async (req, res) => {
+    let channel_id = req.params.channel_id;
+
+    try {
+        await removeChannelInLive(channel_id);
+
+        res.status(200).send({
+            success: true,
+            message: 'Live closed'
         });
     } catch (err) {
         res.status(400).send({
@@ -1570,6 +1607,8 @@ module.exports = {
     getFirstStream: getFirstStream,
     createStream: createStream,
     listenStream: listenStream,
+    setLive: setLive,
+    removeLive: removeLive,
 
     costUsers: costUsers,
     costSubscribe: costSubscribe,
