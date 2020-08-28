@@ -1,4 +1,5 @@
-const {validateRequest} = require('../../utils/validators');
+const { validateRequest } = require('../../utils/validators');
+
 
 module.exports = (router, check, app, restrictedAreaRoutesMethods) => {
 
@@ -79,8 +80,8 @@ module.exports = (router, check, app, restrictedAreaRoutesMethods) => {
     router.post('/subscribe/payment', validateRequest('subscribe payment'), app.oauth.authorise(), restrictedAreaRoutesMethods.doPayment);
 
     /*
-    * ALL ROUTES FOR FAVORITES
-    */
+     * ALL ROUTES FOR FAVORITES
+     */
     router.post('/radio/favorite/:user_id', validateRequest('favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.addRadioInFavorite);
     router.get('/radio/favorite/:user_id', validateRequest('favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.getFavoriteRadio);
     router.delete('/radio/favorite/:user_id', validateRequest('favorite'), app.oauth.authorise(), restrictedAreaRoutesMethods.deleteFavoriteRadio);
@@ -91,9 +92,11 @@ module.exports = (router, check, app, restrictedAreaRoutesMethods) => {
     /**
      * ALL ROUTES FOR STREAMS
      */
-    router.get('/stream/record/:channel_id', restrictedAreaRoutesMethods.recordStream);
-    router.get('/stream/stop', restrictedAreaRoutesMethods.stopStream);
+    /*router.get('/stream/record/:channel_id', restrictedAreaRoutesMethods.recordStream);
+    router.get('/stream/stop', restrictedAreaRoutesMethods.stopStream);*/
     router.get('/stream/generate/:channel_id', restrictedAreaRoutesMethods.getFirstStream);
+    router.get('/stream/listen/:channel_id', restrictedAreaRoutesMethods.listenStream);
+    router.post('/stream/create/:channel_id', restrictedAreaRoutesMethods.createStream);
 
 
     return router

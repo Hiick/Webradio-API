@@ -52,7 +52,9 @@ const {
 
 const {
     recordVoice,
-    stopRecordVoice
+    stopRecordVoice,
+    createStreamFromFolder,
+    listenChannelStream
 } = require('../../controller/stream');
 
 const {
@@ -90,7 +92,7 @@ const Channel = require('../../models/channel'),
 /**
  * SIGNALEMENTS METHODES
  */
-const newSignalement = async (req, res) => {
+const newSignalement = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -102,7 +104,7 @@ const newSignalement = async (req, res) => {
     } else {
         let channel_id = req.params.id;
 
-        Channel.findById(channel_id, async (err, channel) => {
+        Channel.findById(channel_id, async(err, channel) => {
             let signalement = {
                 channel_id: channel_id,
                 user_id: channel.user_id,
@@ -129,7 +131,7 @@ const newSignalement = async (req, res) => {
         })
     }
 };
-const getSignalements = async (req, res) => {
+const getSignalements = async(req, res) => {
     try {
         const signalements = await getAllSignalements();
 
@@ -144,7 +146,7 @@ const getSignalements = async (req, res) => {
         });
     }
 };
-const getSignalementsByChannelID = async (req, res) => {
+const getSignalementsByChannelID = async(req, res) => {
     let signalement = {
         channel_id: req.params.id
     };
@@ -163,7 +165,7 @@ const getSignalementsByChannelID = async (req, res) => {
         });
     }
 };
-const deleteSignalement = async (req, res) => {
+const deleteSignalement = async(req, res) => {
     let signalement = {
         signalement_id: req.params.id
     };
@@ -182,7 +184,7 @@ const deleteSignalement = async (req, res) => {
         });
     }
 };
-const updateSignalement = async (req, res) => {
+const updateSignalement = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -220,7 +222,7 @@ const updateSignalement = async (req, res) => {
 /**
  * CHANNELS METHODES
  */
-const banishChannel = async (req, res) => {
+const banishChannel = async(req, res) => {
 
     let channel = {
         channel_id: req.params.id
@@ -229,8 +231,8 @@ const banishChannel = async (req, res) => {
     Channel.findById(channel, () => {
 
         try {
-            banishChannelByID(channel).then(async () => {
-                return await Channel.updateOne({ _id: req.params.id },{
+            banishChannelByID(channel).then(async() => {
+                return await Channel.updateOne({ _id: req.params.id }, {
                     $set: {
                         status: "BANISH"
                     }
@@ -252,7 +254,7 @@ const banishChannel = async (req, res) => {
     })
 
 };
-const unbanChannel = async (req, res) => {
+const unbanChannel = async(req, res) => {
     let channel = {
         channel_id: req.params.id
     };
@@ -260,8 +262,8 @@ const unbanChannel = async (req, res) => {
     Channel.findById(channel, () => {
 
         try {
-            banishChannelByID(channel).then(async () => {
-                return await Channel.updateOne({ _id: req.params.id },{
+            banishChannelByID(channel).then(async() => {
+                return await Channel.updateOne({ _id: req.params.id }, {
                     $set: {
                         status: "ACTIVE"
                     }
@@ -282,7 +284,7 @@ const unbanChannel = async (req, res) => {
 
     })
 };
-const getChannels = async (req, res) => {
+const getChannels = async(req, res) => {
     try {
         const channels = await getAllChannels();
 
@@ -297,7 +299,7 @@ const getChannels = async (req, res) => {
         });
     }
 };
-const getOneChannel = async (req, res) => {
+const getOneChannel = async(req, res) => {
     try {
         const channel = await getChannel(req.params.id);
 
@@ -312,12 +314,12 @@ const getOneChannel = async (req, res) => {
         });
     }
 };
-const removeChannelListener = async (req, res) => {
+const removeChannelListener = async(req, res) => {
     try {
         const response = await removeOneListener(req.params.id);
 
         if (response) {
-            res.status(200).send({success: false, response});
+            res.status(200).send({ success: false, response });
         } else {
             res.status(200).send({
                 success: true,
@@ -331,7 +333,7 @@ const removeChannelListener = async (req, res) => {
         });
     }
 };
-const updateChannel = async (req, res) => {
+const updateChannel = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -363,7 +365,7 @@ const updateChannel = async (req, res) => {
     }
 
 };
-const getStreamChannel = async (req, res) => {
+const getStreamChannel = async(req, res) => {
     try {
         const channels = await getAllStreamChannels();
 
@@ -378,7 +380,7 @@ const getStreamChannel = async (req, res) => {
         });
     }
 };
-const deleteChannel = async (req, res) => {
+const deleteChannel = async(req, res) => {
     try {
         await deleteChannelByID(req.params.id);
 
@@ -393,7 +395,7 @@ const deleteChannel = async (req, res) => {
         });
     }
 };
-const getBanishChannels = async (req, res) => {
+const getBanishChannels = async(req, res) => {
     try {
         let channels = await getAllBanishChannels();
 
@@ -415,7 +417,7 @@ const getBanishChannels = async (req, res) => {
 /**
  * RADIOS METHODES
  */
-const addRadio = async (req, res) => {
+const addRadio = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -446,12 +448,12 @@ const addRadio = async (req, res) => {
         }
     }
 };
-const removeRadioListener = async (req, res) => {
+const removeRadioListener = async(req, res) => {
     try {
         const response = await removeOneRadioListener(req.params.id);
 
         if (response) {
-            res.status(200).send({success: false, response});
+            res.status(200).send({ success: false, response });
         } else {
             res.status(200).send({
                 success: true,
@@ -466,7 +468,7 @@ const removeRadioListener = async (req, res) => {
     }
 };
 
-const getOneRadio = async (req, res) => {
+const getOneRadio = async(req, res) => {
     try {
         let radio = await getRadioByID(req.params.id);
 
@@ -480,7 +482,7 @@ const getOneRadio = async (req, res) => {
         });
     }
 };
-const updateOneRadio = async (req, res) => {
+const updateOneRadio = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -514,7 +516,7 @@ const updateOneRadio = async (req, res) => {
         }
     }
 };
-const deleteOneRadio = async (req, res) => {
+const deleteOneRadio = async(req, res) => {
     try {
         const deleted = await deleteRadioByID(req.params.id);
 
@@ -538,7 +540,7 @@ const deleteOneRadio = async (req, res) => {
 /**
  * USERS METHODES
  */
-const updateUser = async (req, res) => {
+const updateUser = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -569,7 +571,7 @@ const updateUser = async (req, res) => {
         }
     }
 };
-const updateUserWithRole = async (req, res) => {
+const updateUserWithRole = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -601,7 +603,7 @@ const updateUserWithRole = async (req, res) => {
         }
     }
 };
-const updateUserPassword = async (req, res) => {
+const updateUserPassword = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -631,7 +633,7 @@ const updateUserPassword = async (req, res) => {
         }
     }
 };
-const getUsers = async (req, res) => {
+const getUsers = async(req, res) => {
     try {
         const users = await getAllUsers();
 
@@ -646,7 +648,7 @@ const getUsers = async (req, res) => {
         });
     }
 };
-const getOneUser = async (req, res) => {
+const getOneUser = async(req, res) => {
     try {
         const user = await getUserById(req.params.id);
 
@@ -661,7 +663,7 @@ const getOneUser = async (req, res) => {
         });
     }
 };
-const getUserWithOAuth = async (req, res) => {
+const getUserWithOAuth = async(req, res) => {
     try {
         let token = req.headers.authorization;
         const [bearer, receivedToken] = token.split(" ");
@@ -683,7 +685,7 @@ const getUserWithOAuth = async (req, res) => {
         });
     }
 };
-const getActiveUser = async (req, res) => {
+const getActiveUser = async(req, res) => {
     try {
         const users = await getAllActiveUsers();
 
@@ -698,7 +700,7 @@ const getActiveUser = async (req, res) => {
         });
     }
 };
-const getInactiveUser = async (req, res) => {
+const getInactiveUser = async(req, res) => {
     try {
         const users = await getAllInactiveUsers();
 
@@ -713,7 +715,7 @@ const getInactiveUser = async (req, res) => {
         });
     }
 };
-const deleteUser = async (req, res) => {
+const deleteUser = async(req, res) => {
     try {
         const channel = await deleteUserById(req.params.id);
         await deleteChannelByID(channel[0]._id);
@@ -729,7 +731,7 @@ const deleteUser = async (req, res) => {
         });
     }
 };
-const setInactiveUser = async (req, res) => {
+const setInactiveUser = async(req, res) => {
     try {
         const channel = await setInactiveUserById(req.params.id);
         await setInactiveChannelByID(channel[0]._id);
@@ -746,11 +748,11 @@ const setInactiveUser = async (req, res) => {
     }
 };
 
-const addChannelIdToUser = async (user_id, channel_id) => {
+const addChannelIdToUser = async(user_id, channel_id) => {
     await addChannelIdToNewUser(user_id, channel_id);
 };
 
-const createNewUser = async (req, res) => {
+const createNewUser = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -810,7 +812,7 @@ const createNewUser = async (req, res) => {
             };
 
             const newChannel = Channel(channel);
-            newChannel.save(async (e, result) => {
+            newChannel.save(async(e, result) => {
                 try {
                     await addChannelIdToUser(getUserId[0].user_id, result._id);
                 } catch (e) {
@@ -846,7 +848,7 @@ const getFirstStream = (req, res) => {
     res.set('content-type', 'audio/mp3');
     res.set('accept-ranges', 'bytes');
     try {
-        const stream = TailingReadableStream.createReadStream("Stream/Stream_"+channel+"_"+radio+".mp3", { timeout: 0 });
+        const stream = TailingReadableStream.createReadStream("Stream/Stream_" + channel + "_" + radio + ".mp3", { timeout: 0 });
 
         stream.on('data', buffer => {
             res.write(buffer)
@@ -858,7 +860,7 @@ const getFirstStream = (req, res) => {
         });
     }
 };
-const recordStream = async (req, res) => {
+/*const recordStream = async (req, res) => {
     let channel = req.params.channel_id;
     let radio = req.query.radio_id;
 
@@ -889,18 +891,50 @@ const stopStream = async (req, res) => {
             message: err
         });
     }
-};
-// Don't forget to register stream
-// Mixe 2 stream
-// Diffuse mixed stream ?
-/**
- * END STREAM METHODES
- */
+};*/
+// ICI
+const createStream = async(req, res) => {
+    let channel = req.params.channel_id;
+    let radio = req.query.radio_id;
+
+    try {
+        await createStreamFromFolder(channel, radio, req.body);
+
+        res.status(200).send({
+            success: true,
+            message: 'Created'
+        });
+    } catch (err) {
+        res.status(400).send({
+            success: false,
+            message: err
+        });
+    }
+}
+
+
+const listenStream = async(req, res) => {
+    let channel_id = req.params.channel_id;
+
+    try {
+        await listenChannelStream(channel_id);
+
+        res.status(200).send({
+            success: true,
+            message: 'Enjoy it!'
+        });
+    } catch (err) {
+        res.status(400).send({
+            success: false,
+            message: err
+        });
+    }
+}
 
 /**
  * STATISTIQUES METHODES
  */
-const costUsers = async (req, res) => {
+const costUsers = async(req, res) => {
     try {
         let users = await costAllUsers();
 
@@ -915,7 +949,7 @@ const costUsers = async (req, res) => {
         });
     }
 };
-const costSubscribe = async (req, res) => {
+const costSubscribe = async(req, res) => {
     try {
         let users = await costAllSubscribers();
 
@@ -930,7 +964,7 @@ const costSubscribe = async (req, res) => {
         });
     }
 };
-const costListen = async (req, res) => {
+const costListen = async(req, res) => {
     try {
         let listen = await costAllListen();
 
@@ -945,7 +979,7 @@ const costListen = async (req, res) => {
         });
     }
 };
-const costStreamsListen = async (req, res) => {
+const costStreamsListen = async(req, res) => {
     try {
         let listen = await costAllStreamsListen();
 
@@ -960,7 +994,7 @@ const costStreamsListen = async (req, res) => {
         });
     }
 };
-const costRadiosListen = async (req, res) => {
+const costRadiosListen = async(req, res) => {
     try {
         let listen = await costAllRadiosListen();
 
@@ -975,7 +1009,7 @@ const costRadiosListen = async (req, res) => {
         });
     }
 };
-const costRadios = async (req, res) => {
+const costRadios = async(req, res) => {
     try {
         let radios = await costAllRadios();
 
@@ -990,7 +1024,7 @@ const costRadios = async (req, res) => {
         });
     }
 };
-const costCreatedStream = async (req, res) => {
+const costCreatedStream = async(req, res) => {
     try {
         let created_stream = await costAllCreatedStream();
 
@@ -1005,7 +1039,7 @@ const costCreatedStream = async (req, res) => {
         });
     }
 };
-const costCreatedStreamForUser = async (req, res) => {
+const costCreatedStreamForUser = async(req, res) => {
     try {
         let created_stream = await costAllCreatedStreamByUser(req.params.id);
 
@@ -1020,7 +1054,7 @@ const costCreatedStreamForUser = async (req, res) => {
         });
     }
 };
-const costFavoriteForUser = async (req, res) => {
+const costFavoriteForUser = async(req, res) => {
     try {
         let favoris = await costAllFavoriteForUser(req.params.id);
 
@@ -1035,7 +1069,7 @@ const costFavoriteForUser = async (req, res) => {
         });
     }
 };
-const costListenForUser = async (req, res) => {
+const costListenForUser = async(req, res) => {
     try {
         let listen = await costAllListenForUser(req.params.id);
 
@@ -1050,7 +1084,7 @@ const costListenForUser = async (req, res) => {
         });
     }
 };
-const costSignalementsForUser = async (req, res) => {
+const costSignalementsForUser = async(req, res) => {
     try {
         let signalements = await costAllSignalementsForUser(req.params.channel_id);
 
@@ -1065,7 +1099,7 @@ const costSignalementsForUser = async (req, res) => {
         });
     }
 };
-const costSignalements = async (req, res) => {
+const costSignalements = async(req, res) => {
     try {
         let signalements = await costAllSignalements();
 
@@ -1080,7 +1114,7 @@ const costSignalements = async (req, res) => {
         });
     }
 };
-const costActiveUsers = async (req, res) => {
+const costActiveUsers = async(req, res) => {
     try {
         let users = await costAllActiveUsers();
 
@@ -1095,7 +1129,7 @@ const costActiveUsers = async (req, res) => {
         });
     }
 };
-const costInactiveUsers = async (req, res) => {
+const costInactiveUsers = async(req, res) => {
     try {
         let users = await costAllInactiveUsers();
 
@@ -1110,7 +1144,7 @@ const costInactiveUsers = async (req, res) => {
         });
     }
 };
-const costActiveChannels = async (req, res) => {
+const costActiveChannels = async(req, res) => {
     try {
         let channels = await costAllActiveChannels();
 
@@ -1125,7 +1159,7 @@ const costActiveChannels = async (req, res) => {
         });
     }
 };
-const costInactiveChannels = async (req, res) => {
+const costInactiveChannels = async(req, res) => {
     try {
         let channels = await costAllInactiveChannels();
 
@@ -1140,7 +1174,7 @@ const costInactiveChannels = async (req, res) => {
         });
     }
 };
-const costBanishChannels = async (req, res) => {
+const costBanishChannels = async(req, res) => {
     try {
         let channels = await costAllBanishChannels();
 
@@ -1155,7 +1189,7 @@ const costBanishChannels = async (req, res) => {
         });
     }
 };
-const costPlanStreamForUser = async (req, res) => {
+const costPlanStreamForUser = async(req, res) => {
     try {
         let plan = await costAllPlanStreamForUser(req.params.id);
 
@@ -1170,7 +1204,7 @@ const costPlanStreamForUser = async (req, res) => {
         });
     }
 };
-const costPlan = async (req, res) => {
+const costPlan = async(req, res) => {
     try {
         let plan = await costAllPlan();
 
@@ -1192,11 +1226,11 @@ const costPlan = async (req, res) => {
 /**
  * STRIPE METHODES
  */
-const getAllSubscriptions = async (req, res) => {
+const getAllSubscriptions = async(req, res) => {
     res.status(200).send(await STRIPE_API.getProductsAndPlans());
 }
 
-const checkIfUserIsSubscribe = async (req, res) => {
+const checkIfUserIsSubscribe = async(req, res) => {
     const subscribe = await getUserById(req.params.user_id);
 
     if (!subscribe[0].stripe_id) {
@@ -1212,9 +1246,9 @@ const checkIfUserIsSubscribe = async (req, res) => {
             }
         }
 
-        let url = 'https://api.stripe.com/v1/customers/'+subscribe[0].stripe_id;
+        let url = 'https://api.stripe.com/v1/customers/' + subscribe[0].stripe_id;
 
-        await axios.get(url, config).then(async (response) => {
+        await axios.get(url, config).then(async(response) => {
             if (response.data.subscriptions.data[0].status === 'active') {
                 res.status(200).send({
                     success: true,
@@ -1232,7 +1266,7 @@ const checkIfUserIsSubscribe = async (req, res) => {
     }
 }
 
-const doPayment = async (req, res) => {
+const doPayment = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -1262,7 +1296,7 @@ const doPayment = async (req, res) => {
                 'card[cvc]': req.body.card_cvc
             }
 
-            await axios.post('https://api.stripe.com/v1/payment_methods', qs.stringify(card), config).then(async (response) => {
+            await axios.post('https://api.stripe.com/v1/payment_methods', qs.stringify(card), config).then(async(response) => {
                 let paymentMethodId = response.data.id
 
                 let payment = {
@@ -1314,7 +1348,7 @@ const doPayment = async (req, res) => {
 /**
  * FAVORITES METHODES
  */
-const addRadioInFavorite = async (req, res) => {
+const addRadioInFavorite = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -1353,7 +1387,7 @@ const addRadioInFavorite = async (req, res) => {
     }
 }
 
-const getFavoriteRadio = async (req, res) => {
+const getFavoriteRadio = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -1379,7 +1413,7 @@ const getFavoriteRadio = async (req, res) => {
     }
 }
 
-const deleteFavoriteRadio = async (req, res) => {
+const deleteFavoriteRadio = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -1405,7 +1439,7 @@ const deleteFavoriteRadio = async (req, res) => {
     }
 }
 
-const addChannelInFavorite = async (req, res) => {
+const addChannelInFavorite = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -1444,7 +1478,7 @@ const addChannelInFavorite = async (req, res) => {
     }
 }
 
-const getFavoriteChannel = async (req, res) => {
+const getFavoriteChannel = async(req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -1470,34 +1504,34 @@ const getFavoriteChannel = async (req, res) => {
     }
 }
 
-const deleteFavoriteChannel = async (req, res) => {
-    const errors = validationResult(req);
+const deleteFavoriteChannel = async(req, res) => {
+        const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-        res.status(400).send({
-            success: false,
-            message: 'Erreur de validation',
-            error: errors.array()
-        });
-    } else {
-        try {
-            let deleteFavorite = await deleteFavoriteChannelForUser(req.params.user_id, req.query.channel_id);
-
-            res.status(200).send({
-                success: true,
-                deleteFavorite
-            });
-        } catch (err) {
+        if (!errors.isEmpty()) {
             res.status(400).send({
                 success: false,
-                message: err
+                message: 'Erreur de validation',
+                error: errors.array()
             });
+        } else {
+            try {
+                let deleteFavorite = await deleteFavoriteChannelForUser(req.params.user_id, req.query.channel_id);
+
+                res.status(200).send({
+                    success: true,
+                    deleteFavorite
+                });
+            } catch (err) {
+                res.status(400).send({
+                    success: false,
+                    message: err
+                });
+            }
         }
     }
-}
-/**
- * END FAVORITES METHODES
- */
+    /**
+     * END FAVORITES METHODES
+     */
 module.exports = {
     newSignalement: newSignalement,
     getSignalements: getSignalements,
@@ -1516,7 +1550,7 @@ module.exports = {
     getBanishChannels: getBanishChannels,
 
     addRadio: addRadio,
-    getOneRadio:getOneRadio,
+    getOneRadio: getOneRadio,
     removeRadioListener: removeRadioListener,
     updateOneRadio: updateOneRadio,
     deleteOneRadio: deleteOneRadio,
@@ -1534,8 +1568,8 @@ module.exports = {
     createNewUser: createNewUser,
 
     getFirstStream: getFirstStream,
-    recordStream: recordStream,
-    stopStream: stopStream,
+    createStream: createStream,
+    listenStream: listenStream,
 
     costUsers: costUsers,
     costSubscribe: costSubscribe,
