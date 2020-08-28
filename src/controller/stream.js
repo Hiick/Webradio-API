@@ -122,14 +122,26 @@ const moveFile = async(oldPath, newPath, callback) => {
 }
 
 const listenChannelStream = async (channel_id) => {
-    let channel = await Channel.findById({ _id: channel_id });
+    let channelExist = await Channel.findById({ _id: channel_id });
 
-    // Reception d'une requête pour envoyer les datas du fichier text base64
-    // Envoi egalement de l'url de la radio
-    // Chercher l'identifiant Dryska et lui mettre un flux radio
+    if (channelExist) {
+        return new Promise((resolve, reject) => {
+            fs.readdir(`Stream/${channel_id}/Concat_Folder`, async(err, files) => {
+                fs.readFile(`Stream/${channel_id}/Concat_Folder/${files[0]}`, (err, data) => {
+                    if (err) reject(err);
+                    const base64 = data.toString();
+                    resolve({
+                        radio: channelExist.Stream[0].direct_url,
+                        audio: base64
+                    })
 
-    console.log(channel)
-    console.log(channel.Stream[0].direct_url);
+                })
+            })
+        })
+
+    } else {
+        throw new Error();
+    }
 }
 
 const setChannelInLive = async (channel_id) => {
