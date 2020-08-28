@@ -126,9 +126,30 @@ const listenChannelStream = async (channel_id) => {
 
     // Reception d'une requête pour envoyer les datas du fichier text base64
     // Envoi egalement de l'url de la radio
+    // Chercher l'identifiant Dryska et lui mettre un flux radio
 
     console.log(channel)
     console.log(channel.Stream[0].direct_url);
+}
+
+const setChannelInLive = async (channel_id) => {
+    return await Channel.updateOne({ _id: channel_id }, {
+        $set: {
+            Stream: [{
+                live: true
+            }]
+        }
+    })
+}
+
+const removeChannelInLive = async (channel_id) => {
+    return await Channel.updateOne({ _id: channel_id }, {
+        $set: {
+            Stream: [{
+                live: false
+            }]
+        }
+    })
 }
 
 /**
@@ -137,5 +158,7 @@ const listenChannelStream = async (channel_id) => {
 
 module.exports = {
     createStreamFromFolder,
-    listenChannelStream
+    listenChannelStream,
+    setChannelInLive,
+    removeChannelInLive
 };

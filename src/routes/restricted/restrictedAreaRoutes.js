@@ -97,6 +97,8 @@ module.exports = (router, check, app, restrictedAreaRoutesMethods) => {
     router.get('/stream/generate/:channel_id', restrictedAreaRoutesMethods.getFirstStream);
     router.get('/stream/listen/:channel_id', restrictedAreaRoutesMethods.listenStream);
     router.post('/stream/create/:channel_id', restrictedAreaRoutesMethods.createStream);
+    router.post('/stream/live/:channel_id', restrictedAreaRoutesMethods.setLive);
+    router.put('/stream/live/:channel_id', restrictedAreaRoutesMethods.removeLive);
 
 
     return router
