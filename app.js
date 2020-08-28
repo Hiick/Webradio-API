@@ -1,5 +1,5 @@
 require('dotenv').config();
-const express= require('express'),
+const express = require('express'),
     mySqlConnection = require('./src/database/mysql'),
     mongoose = require('mongoose'),
     user = require('./src/database/oauth')(mySqlConnection),
@@ -12,6 +12,7 @@ const express= require('express'),
     { check } = require('express-validator'),
     path = require('path'),
     cors = require('cors'),
+    fs = require('fs'),
     app = express(),
     port = process.env.PORT || 3000;
 
@@ -32,16 +33,17 @@ app.oauth = oAuth2Server({
     debug: true
 });
 
-const restrictedAreaRoutesMethods = require('./src/routes/restricted/restrictedAreaRoutesMethods'),
-    restrictedAreaRoutes = require('./src/routes/restricted/restrictedAreaRoutes')(express.Router(), check, app, restrictedAreaRoutesMethods),
-    authRoutesMethods = require('./src/routes/open/authRoutesMethodes')(user),
-    authRoutes = require('./src/routes/open/authRoutes')(express.Router(), check, authRoutesMethods);
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors(corsOptions));
 
 app.use(cookieParser());
+
+const restrictedAreaRoutesMethods = require('./src/routes/restricted/restrictedAreaRoutesMethods'),
+    restrictedAreaRoutes = require('./src/routes/restricted/restrictedAreaRoutes')(express.Router(), check, app, restrictedAreaRoutesMethods),
+    authRoutesMethods = require('./src/routes/open/authRoutesMethodes')(user),
+    authRoutes = require('./src/routes/open/authRoutes')(express.Router(), check, authRoutesMethods);
+
 
 app.use(passport.initialize());
 
@@ -51,8 +53,8 @@ app.use('/auth', authRoutes);
 app.use('/authorized', restrictedAreaRoutes);
 
 mongoose.connect(process.env.CONNECT_URL, {
-   useNewUrlParser: true,
-   useUnifiedTopology: true
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 }).then((database) => {
     console.log('Connected to MongoDB !');
     global.db = database
@@ -65,4 +67,3 @@ app.get('/', (req, res) => {
 app.listen(port, function() {
     console.log('🚀 App listening on ' + port)
 });
-
