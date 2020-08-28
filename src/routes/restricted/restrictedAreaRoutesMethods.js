@@ -918,12 +918,9 @@ const listenStream = async(req, res) => {
     let channel_id = req.params.channel_id;
 
     try {
-        await listenChannelStream(channel_id);
+        const live = await listenChannelStream(channel_id);
 
-        res.status(200).send({
-            success: true,
-            message: 'Enjoy it!'
-        });
+        res.status(200).send(live);
     } catch (err) {
         res.status(400).send({
             success: false,
