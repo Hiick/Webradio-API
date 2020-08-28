@@ -18,20 +18,15 @@ const createStreamFromFolder = async(channel_id, radio_id, body) => {
     const REAL_STREAM = 'Real_Stream';
     const CONCAT_FOLDER = 'Concat_Folder';
 
-    console.log(fs.existsSync(DIRECTORY))
-    console.log(fs.existsSync(`${DIRECTORY}/` + CHANNEL))
-
     if (!fs.existsSync(DIRECTORY)) {
         await fs.mkdirSync(DIRECTORY);
         await fs.mkdirSync(DIRECTORY+`/` + CHANNEL);
-        await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + REAL_STREAM);
-        await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + CONCAT_FOLDER);
-    } else {
-        if (!fs.existsSync(DIRECTORY+`/` + CHANNEL)) {
-            await fs.mkdirSync(DIRECTORY+`/` + CHANNEL);
-            await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + '/' + REAL_STREAM);
-            await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + '/' + CONCAT_FOLDER);
-        }
+        await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + `/` + REAL_STREAM);
+        await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + `/` + CONCAT_FOLDER);
+    } else if (!fs.existsSync(DIRECTORY+`/` + CHANNEL)) {
+        await fs.mkdirSync(DIRECTORY+`/` + CHANNEL);
+        await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + '/' + REAL_STREAM);
+        await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + '/' + CONCAT_FOLDER);
     }
 
     let channelinfo = await Channel.findById({ _id: channel_id });
@@ -39,17 +34,10 @@ const createStreamFromFolder = async(channel_id, radio_id, body) => {
 
     let audio = body.audio;
 
-    const streamId = DIRECTORY+`/` + channel_id;
-    const filename = path.join(DIRECTORY + '/' + channel_id + '/' + CONCAT_FOLDER, streamId.concat('.txt'));
-
-    console.log(DIRECTORY+`/`)
-    console.log(CHANNEL)
-    console.log(CONCAT_FOLDER)
-    console.log(DIRECTORY+`/` + CHANNEL + '/' + CONCAT_FOLDER)
+    const filename = path.join(DIRECTORY + '/' + channel_id + '/' + CONCAT_FOLDER, channel_id.concat('.txt'));
+    await fs.createWriteStream(filename);
 
     fs.readdir(DIRECTORY+`/` + CHANNEL + '/' + CONCAT_FOLDER, async(err, files) => {
-        console.log(err)
-        console.log(files)
         if (files.length > 0) {
             fs.readFile(`${DIRECTORY}/${CHANNEL}/${CONCAT_FOLDER}/${files[0]}`, async(err, data) => {
                 if (err) console.log(err);
