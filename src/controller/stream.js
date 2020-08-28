@@ -18,6 +18,9 @@ const createStreamFromFolder = async(channel_id, radio_id, body) => {
     const REAL_STREAM = 'Real_Stream';
     const CONCAT_FOLDER = 'Concat_Folder';
 
+    console.log(fs.existsSync(DIRECTORY))
+    console.log(fs.existsSync('Stream/' + CHANNEL))
+
     if (!fs.existsSync(DIRECTORY)) {
         fs.mkdirSync(DIRECTORY);
         fs.mkdirSync('Stream/' + CHANNEL);
