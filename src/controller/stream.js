@@ -133,23 +133,31 @@ const listenChannelStream = async (channel_id) => {
 }
 
 const setChannelInLive = async (channel_id) => {
-    return await Channel.updateOne({ _id: channel_id }, {
-        $set: {
-            Stream: [{
+    const channelExist = await Channel.findById({ _id: channel_id});
+
+    if (channelExist) {
+        return await Channel.updateOne({ _id: channel_id }, {
+            $set: {
                 live: true
-            }]
-        }
-    })
+            }
+        })
+    } else {
+        throw new Error();
+    }
 }
 
 const removeChannelInLive = async (channel_id) => {
-    return await Channel.updateOne({ _id: channel_id }, {
-        $set: {
-            Stream: [{
+    const channelExist = await Channel.findById({ _id: channel_id});
+
+    if (channelExist) {
+        return await Channel.updateOne({_id: channel_id}, {
+            $set: {
                 live: false
-            }]
+            }
+        })
+    } else {
+            throw new Error();
         }
-    })
 }
 
 /**
