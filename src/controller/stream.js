@@ -22,15 +22,15 @@ const createStreamFromFolder = async(channel_id, radio_id, body) => {
     console.log(fs.existsSync(`${DIRECTORY}/` + CHANNEL))
 
     if (!fs.existsSync(DIRECTORY)) {
-        fs.mkdirSync(DIRECTORY);
-        fs.mkdirSync(DIRECTORY+`/` + CHANNEL);
-        fs.mkdirSync(DIRECTORY+`/` + CHANNEL + REAL_STREAM);
-        fs.mkdirSync(DIRECTORY+`/` + CHANNEL + CONCAT_FOLDER);
+        await fs.mkdirSync(DIRECTORY);
+        await fs.mkdirSync(DIRECTORY+`/` + CHANNEL);
+        await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + REAL_STREAM);
+        await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + CONCAT_FOLDER);
     } else {
         if (!fs.existsSync(DIRECTORY+`/` + CHANNEL)) {
-            fs.mkdirSync(DIRECTORY+`/` + CHANNEL);
-            fs.mkdirSync(DIRECTORY+`/` + CHANNEL + '/' + REAL_STREAM);
-            fs.mkdirSync(DIRECTORY+`/` + CHANNEL + '/' + CONCAT_FOLDER);
+            await fs.mkdirSync(DIRECTORY+`/` + CHANNEL);
+            await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + '/' + REAL_STREAM);
+            await fs.mkdirSync(DIRECTORY+`/` + CHANNEL + '/' + CONCAT_FOLDER);
         }
     }
 
