@@ -1,25 +1,9 @@
 require('dotenv').config();
-const AudioRecorder = require('node-audiorecorder'),
-    fs = require('fs'),
-    createBuffer = require('audio-buffer-from'),
+const fs = require('fs'),
     Radio = require('../models/radio'),
     Channel = require('../models/channel'),
-    toWav = require('audiobuffer-to-wav'),
-    wav = require('node-wav'),
-    WavEncoder = require("wav-encoder"),
     path = require('path');
 
-const AudioContext = require('web-audio-api').AudioContext;
-const audioContext = new AudioContext;
-const async = require("async");
-const audioconcat = require('audioconcat');
-const ffmpeg = require('fluent-ffmpeg');
-const AudioBuffer = require('audiobuffer');
-const text2wav = require('text2wav')
-
-var AudioBufferStream = require('audio-buffer-stream')
-var lamejs = require('lamejs');
-var base64 = require('file-base64');
 
 const joinBase64Strings = (base64Str1, base64Str2) => {
     const bothData = Buffer.from(base64Str1, 'base64').toString('binary') +
@@ -52,7 +36,7 @@ const createStreamFromFolder = async(channel_id, radio_id, body) => {
 
     let audio = body.audio;
 
-    const streamId = "Stream_" + channel_id + '_' + audio.length;
+    const streamId = "Stream_" + channel_id;
     const filename = path.join(DIRECTORY + '/' + channel_id + '/' + CONCAT_FOLDER, streamId.concat('.txt'));
 
     fs.readdir('Stream/' + CHANNEL + '/' + CONCAT_FOLDER, async(err, files) => {
@@ -68,6 +52,10 @@ const createStreamFromFolder = async(channel_id, radio_id, body) => {
                         if (err) console.log(err);
                         /*console.log(channelinfo);
                         console.log(radioinfo);*/
+                        // Ici Socket
+                        // Envoi de la variable audio
+                        // Envoi l'url radio en direct
+                        // Envoi information de la chaîne
                         let radio_stream = radioinfo.Stream.direct_url;
 
                         return await Channel.updateOne({ _id: channel_id }, {
