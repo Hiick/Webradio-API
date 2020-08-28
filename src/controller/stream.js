@@ -42,6 +42,11 @@ const createStreamFromFolder = async(channel_id, radio_id, body) => {
     const streamId = `${__dirname}` + channel_id;
     const filename = path.join(DIRECTORY + '/' + channel_id + '/' + CONCAT_FOLDER, streamId.concat('.txt'));
 
+    console.log(`${__dirname}/`)
+    console.log(CHANNEL)
+    console.log(CONCAT_FOLDER)
+    console.log(`${__dirname}/` + CHANNEL + '/' + CONCAT_FOLDER)
+
     fs.readdir(`${__dirname}/` + CHANNEL + '/' + CONCAT_FOLDER, async(err, files) => {
         if (files.length > 0) {
             fs.readFile(`${__dirname}/${CHANNEL}/${CONCAT_FOLDER}/${files[0]}`, async(err, data) => {
