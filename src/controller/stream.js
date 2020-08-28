@@ -121,12 +121,19 @@ const moveFile = async(oldPath, newPath, callback) => {
     }
 }
 
-const listenChannelStream = (channel_id) => {
-    let channel = Channel.findById({ _id: channel_id });
+const listenChannelStream = async (channel_id) => {
+    let channel = await Channel.findById({ _id: channel_id });
+
+    // Reception d'une requête pour envoyer les datas du fichier text base64
+    // Envoi egalement de l'url de la radio
 
     console.log(channel)
     console.log(channel.Stream[0].direct_url);
 }
+
+/**
+ * Mise en place de Socket pour l'envoi à l'infini des datas (variable audio, voir createStream) + l'url de la radio
+ */
 
 module.exports = {
     createStreamFromFolder,
