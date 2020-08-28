@@ -127,6 +127,7 @@ const listenChannelStream = async (channel_id) => {
     if (channelExist) {
         return new Promise((resolve, reject) => {
             fs.readdir(`Stream/${channel_id}/Concat_Folder`, async(err, files) => {
+                console.log(files)
                 fs.readFile(`Stream/${channel_id}/Concat_Folder/${files[0]}`, (err, data) => {
                     if (err) reject(err);
                     const base64 = data.toString();
