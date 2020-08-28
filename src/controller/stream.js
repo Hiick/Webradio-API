@@ -23,14 +23,14 @@ const createStreamFromFolder = async(channel_id, radio_id, body) => {
 
     if (!fs.existsSync(DIRECTORY)) {
         fs.mkdirSync(DIRECTORY);
-        fs.mkdirSync(`${__dirname}/` + CHANNEL);
-        fs.mkdirSync(`${__dirname}/` + CHANNEL + REAL_STREAM);
-        fs.mkdirSync(`${__dirname}/` + CHANNEL + CONCAT_FOLDER);
+        fs.mkdirSync(DIRECTORY+`/` + CHANNEL);
+        fs.mkdirSync(DIRECTORY+`/` + CHANNEL + REAL_STREAM);
+        fs.mkdirSync(DIRECTORY+`/` + CHANNEL + CONCAT_FOLDER);
     } else {
-        if (!fs.existsSync(`${__dirname}/` + CHANNEL)) {
-            fs.mkdirSync(`${__dirname}/` + CHANNEL);
-            fs.mkdirSync(`${__dirname}/` + CHANNEL + '/' + REAL_STREAM);
-            fs.mkdirSync(`${__dirname}/` + CHANNEL + '/' + CONCAT_FOLDER);
+        if (!fs.existsSync(DIRECTORY+`/` + CHANNEL)) {
+            fs.mkdirSync(DIRECTORY+`/` + CHANNEL);
+            fs.mkdirSync(DIRECTORY+`/` + CHANNEL + '/' + REAL_STREAM);
+            fs.mkdirSync(DIRECTORY+`/` + CHANNEL + '/' + CONCAT_FOLDER);
         }
     }
 
@@ -39,24 +39,24 @@ const createStreamFromFolder = async(channel_id, radio_id, body) => {
 
     let audio = body.audio;
 
-    const streamId = `${__dirname}` + channel_id;
+    const streamId = DIRECTORY+`/` + channel_id;
     const filename = path.join(DIRECTORY + '/' + channel_id + '/' + CONCAT_FOLDER, streamId.concat('.txt'));
 
-    console.log(`${__dirname}/`)
+    console.log(DIRECTORY+`/`)
     console.log(CHANNEL)
     console.log(CONCAT_FOLDER)
-    console.log(`${__dirname}/` + CHANNEL + '/' + CONCAT_FOLDER)
+    console.log(DIRECTORY+`/` + CHANNEL + '/' + CONCAT_FOLDER)
 
-    fs.readdir(`${__dirname}/` + CHANNEL + '/' + CONCAT_FOLDER, async(err, files) => {
+    fs.readdir(DIRECTORY+`/` + CHANNEL + '/' + CONCAT_FOLDER, async(err, files) => {
         if (files.length > 0) {
-            fs.readFile(`${__dirname}/${CHANNEL}/${CONCAT_FOLDER}/${files[0]}`, async(err, data) => {
+            fs.readFile(`${DIRECTORY}/${CHANNEL}/${CONCAT_FOLDER}/${files[0]}`, async(err, data) => {
                 if (err) console.log(err);
                 audio = body.audio.split(",")[1];
                 const newData = joinBase64Strings(data.toString(), audio)
-                fs.unlink(`${__dirname}/${CHANNEL}/${CONCAT_FOLDER}/${files[0]}`, async(err) => {
+                fs.unlink(`${DIRECTORY}/${CHANNEL}/${CONCAT_FOLDER}/${files[0]}`, async(err) => {
                     if (err) throw err;
-                    await fs.createWriteStream(`${__dirname}/${CHANNEL}/${CONCAT_FOLDER}/${files[0]}`);
-                    fs.writeFile(`${__dirname}/${CHANNEL}/${CONCAT_FOLDER}/${files[0]}`, newData, async (err) => {
+                    await fs.createWriteStream(`${DIRECTORY}/${CHANNEL}/${CONCAT_FOLDER}/${files[0]}`);
+                    fs.writeFile(`${DIRECTORY}/${CHANNEL}/${CONCAT_FOLDER}/${files[0]}`, newData, async (err) => {
                         if (err) console.log(err);
                         /*console.log(channelinfo);
                         console.log(radioinfo);*/
